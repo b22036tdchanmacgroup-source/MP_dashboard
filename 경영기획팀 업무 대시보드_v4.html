@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 2Q 경영기획팀 전략 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --burnt-orange: #BD5429; --slate-green: #496259; --bg-gray: #F3F4F6; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-gray); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; overflow-y: auto; margin: 0; font-size: 14px; }
+        .dashboard-container { width: 100%; min-height: 100vh; background: white; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .header-gradient { background: linear-gradient(90deg, var(--slate-green) 0%, #2D3E38 100%); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+        .badge-상 { background-color: #ef4444; color: white; }
+        .badge-중 { background-color: #f97316; color: white; }
+        .badge-하 { background-color: #3b82f6; color: white; }
+
+        .status-진행 { background-color: #DBEAFE; color: #1E40AF; }
+        .status-완료 { background-color: #D1FAE5; color: #065F46; }
+        .status-보류 { background-color: #FEF3C7; color: #92400E; }
+
+        #modalOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 1100px; max-height: 85vh; border-radius: 12px; padding: 35px; overflow-y: auto; }
+
+        #routineModalOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
+        .routine-modal-content { background: white; width: 1080px; max-height: 92vh; border-radius: 14px; padding: 36px; overflow-y: auto; }
+
+        .project-title { font-size: 20px; font-weight: 800; color: #1e293b; line-height: 1.3; }
+        .tab-btn { transition: all 0.15s; }
+        .tab-btn.active { border-bottom: 2px solid #BD5429; color: #BD5429; font-weight: 700; }
+
+        /* 로딩 오버레이 */
+        #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.92); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #496259; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* URL 설정 모달 */
+        #urlSetupOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; justify-content: center; align-items: center; }
+    </style>
+</head>
+<body>
+
+<!-- ==================== 로딩 ==================== -->
+<div id="loadingOverlay">
+    <div class="spinner"></div>
+    <p class="text-sm text-slate-500 font-medium">구글시트 데이터 불러오는 중...</p>
+</div>
+
+<!-- ==================== URL 설정 모달 ==================== -->
+<div id="urlSetupOverlay">
+    <div style="background:white; width:560px; border-radius:16px; padding:36px;">
+        <h2 class="text-xl font-bold text-slate-800 mb-2">⚙️ 초기 설정</h2>
+        <p class="text-sm text-slate-500 mb-5 leading-relaxed">
+            구글시트와 연동하려면 <strong>Apps Script 웹앱 URL</strong>이 필요합니다.<br>
+            아래 안내에 따라 URL을 발급받아 입력해주세요.
+        </p>
+        <div class="bg-slate-50 rounded-lg p-4 mb-5 text-xs text-slate-600 leading-loose border border-slate-200">
+            <p class="font-bold text-slate-700 mb-1">📋 URL 발급 방법</p>
+            <ol class="list-decimal list-inside space-y-1">
+                <li>구글시트 메뉴 → <strong>확장 프로그램</strong> → <strong>Apps Script</strong></li>
+                <li>제공된 <code class="bg-white px-1 rounded border">Code.gs</code> 코드 붙여넣고 저장</li>
+                <li>상단 <strong>배포</strong> → <strong>새 배포</strong> 클릭</li>
+                <li>유형: <strong>웹앱</strong> / 실행: <strong>나</strong> / 액세스: <strong>모든 사용자</strong></li>
+                <li>배포 후 생성된 URL 복사</li>
+            </ol>
+        </div>
+        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-tight">Apps Script 웹앱 URL</label>
+        <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/..." 
+            class="w-full border rounded-lg px-3 py-2.5 text-sm mb-4 focus:ring-2 focus:ring-[#496259] focus:outline-none">
+        <div class="flex gap-3">
+            <button onclick="saveScriptUrl()" class="flex-1 py-2.5 bg-[#496259] hover:bg-[#384e46] text-white text-sm font-bold rounded-lg transition-all">연결하기</button>
+            <button onclick="useOfflineMode()" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition-all">오프라인 모드로 시작</button>
+        </div>
+        <p class="text-[10px] text-slate-400 mt-3 text-center">오프라인 모드: 로컬 저장(localStorage)만 사용합니다</p>
+    </div>
+</div>
+
+<!-- ==================== 메인 대시보드 ==================== -->
+<div class="dashboard-container">
+    <header class="header-gradient text-white px-5 py-3 flex justify-between items-center">
+        <div class="flex flex-col gap-0.5">
+            <div class="flex items-center gap-3">
+                <h1 class="text-xl font-bold tracking-tighter">경영기획팀 전략 대시보드</h1>
+                <span class="text-sm font-normal opacity-50">2026 2Q Portal</span>
+                <div id="syncStatus" class="text-[10px] opacity-60"></div>
+            </div>
+            <div id="reportTitleDisplay" class="text-sm font-semibold text-orange-200 tracking-tight hidden"></div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button onclick="fetchFromSheets()" class="bg-[#384e46] hover:bg-[#2a3b35] border border-white/20 px-3 py-2 rounded text-xs font-bold shadow transition-all" title="구글시트에서 최신 데이터 가져오기">🔄 새로고침</button>
+            <button onclick="openRoutineModal()" class="bg-[#496259] hover:bg-[#384e46] border border-white/20 px-4 py-2 rounded text-xs font-bold shadow transition-all">📋 상시업무</button>
+            <button onclick="openUrlSetup()" class="bg-[#2a3b35] hover:bg-[#1e2d28] border border-white/20 px-3 py-2 rounded text-xs font-bold shadow transition-all">⚙️ 시트 연결</button>
+            <div id="currentDateDisplay" class="text-xs font-medium text-orange-200 border-l border-white/20 pl-3"></div>
+        </div>
+    </header>
+
+    <main class="flex-1 p-6 grid grid-cols-12 gap-6" style="min-height:calc(100vh - 64px)">
+        <!-- LEFT: MEMO SIDEBAR -->
+        <div class="col-span-3 flex flex-col space-y-5 border-r pr-4">
+            <div class="bg-white rounded-xl p-5 border border-gray-200 flex flex-col shadow-sm" style="min-height:420px">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-black text-slate-500 uppercase tracking-tighter">팀 공유사항</h3>
+                </div>
+                <div id="teamMemoList" class="flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
+            </div>
+            <div class="bg-orange-50 rounded-xl p-5 border border-orange-100 flex flex-col shadow-inner" style="min-height:280px">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-black text-[#BD5429] uppercase tracking-tighter">사장님 지시/이슈 사항</h3>
+                </div>
+                <div id="ceoMemoList" class="flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT: PROJECT GRID -->
+        <div class="col-span-9 flex flex-col">
+            <div id="projectGrid" class="grid grid-cols-3 gap-5 pb-8">
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ==================== MODAL: 과업 상세보기 ==================== -->
+<div id="modalOverlay">
+    <div class="modal-content relative">
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <h2 id="modalTitle" class="text-2xl font-bold text-slate-800 tracking-tight">과업 상세보기</h2>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-black text-4xl">&times;</button>
+        </div>
+        <div class="grid grid-cols-12 gap-6" style="height:600px">
+            <div class="col-span-5 flex flex-col gap-3 h-full">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-tighter">PM</label>
+                        <input type="text" id="mPm" class="w-full border rounded px-3 py-2 font-medium bg-gray-50 text-sm" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-tighter">협업부서</label>
+                        <input type="text" id="mCollab" class="w-full border rounded px-3 py-2 font-medium bg-gray-50 text-sm" readonly>
+                    </div>
+                </div>
+                <div class="flex flex-col" style="flex:3">
+                    <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-tighter">과업 목표 및 내용</label>
+                    <textarea id="mGoals" class="flex-1 w-full border rounded px-3 py-3 resize-none bg-gray-50 leading-relaxed text-sm" readonly></textarea>
+                </div>
+                <div class="flex flex-col" style="flex:2">
+                    <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-tighter">이슈사항</label>
+                    <textarea id="mIssue" class="flex-1 w-full border rounded px-3 py-3 resize-none bg-red-50 text-red-700 leading-relaxed font-medium text-sm" readonly></textarea>
+                </div>
+            </div>
+            <div class="col-span-7 flex flex-col gap-3 h-full">
+                <div class="flex flex-col flex-1">
+                    <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-tighter">세미나 및 회의 이력</label>
+                    <textarea id="mSeminars" class="flex-1 w-full border rounded px-5 py-4 outline-none leading-relaxed shadow-inner overflow-y-auto resize-none bg-gray-50 text-sm" readonly></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="mt-6 flex justify-end border-t pt-4">
+            <div id="mAttachments" class="mr-auto flex flex-wrap gap-2 items-center"></div>
+            <button onclick="closeModal()" class="px-6 py-2 rounded bg-gray-100 text-xs font-medium">닫기</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL: 상시업무 ==================== -->
+<div id="routineModalOverlay">
+    <div class="routine-modal-content relative">
+        <div class="flex justify-between items-center mb-5 border-b pb-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800">상시업무 현황</h2>
+                <p class="text-[11px] text-slate-400 mt-0.5">재무/비용 · 바론 사업관리·ERP·법인 · 기타/기획</p>
+            </div>
+            <button onclick="closeRoutineModal()" class="text-gray-400 hover:text-black text-4xl">&times;</button>
+        </div>
+        <div class="flex space-x-4 border-b mb-4 text-xs text-gray-400">
+            <button class="tab-btn active pb-2 px-1" onclick="switchTab('재무비용', this)">재무/비용</button>
+            <button class="tab-btn pb-2 px-1" onclick="switchTab('바론', this)">바론 사업관리·ERP·법인</button>
+            <button class="tab-btn pb-2 px-1" onclick="switchTab('기타기획', this)">기타/기획</button>
+        </div>
+
+        <div id="tab-재무비용" class="tab-panel">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-xs font-bold text-slate-700">경영현황 보고자료</span>
+                        <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 김윤재 · 매월</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mb-2">월별 실적/자금흐름/재무현황 보고자료 작성</p>
+                    <div id="routine-경영현황" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-att-경영현황" class="flex flex-wrap mt-2"></div>
+                </div>
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-xs font-bold text-slate-700">동종업계 실적보고</span>
+                        <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 김윤재 · 매년 2분기</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mb-2">동종업계(ENG/거더사) 실적 자료 작성</p>
+                    <div id="routine-동종업계" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-att-동종업계" class="flex flex-wrap mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-기타기획" class="tab-panel hidden">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-xs font-bold text-slate-700">지식재산권 업무</span>
+                        <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 이미영 · 상시</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mb-2">특허/저작권/라이선스/정보보안 관련 제반 업무</p>
+                    <div id="routine-지재권" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-att-지재권" class="flex flex-wrap mt-2"></div>
+                </div>
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-xs font-bold text-slate-700">CCP 기획 및 작업</span>
+                        <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 김윤재 · 상시</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mb-2">프로세스화 및 현황판 대시보드/세부과업별 인트로</p>
+                    <div id="routine-CCP" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-att-CCP" class="flex flex-wrap mt-2"></div>
+                </div>
+            </div>
+            <div class="bg-orange-50 rounded-lg border border-orange-200 p-4" style="min-height:290px">
+                <div class="flex justify-between items-start mb-1">
+                    <span class="text-xs font-bold text-slate-700">상시기획/팀지원</span>
+                    <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 팀 공통 · 상시</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mb-2">상시 기획 및 타팀 기획 지원, 기획실 내 일반업무 전체</p>
+                <div id="routine-팀지원" class="text-sm text-slate-700 leading-relaxed bg-white border border-orange-100 rounded p-3 whitespace-pre-wrap" style="min-height:180px"></div>
+                <div id="routine-att-팀지원" class="flex flex-wrap mt-2"></div>
+            </div>
+        </div>
+
+        <div id="tab-바론" class="tab-panel hidden">
+            <div class="grid grid-cols-3 gap-4">
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-xs font-bold text-slate-700">바론 사업관리</span>
+                        <span class="text-[10px] text-slate-400 shrink-0 ml-1">국혜림(임민경)</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mb-2">바론컨설턴트 법인 계약/청구/수금</p>
+                    <div id="routine-바론사업" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-att-바론사업" class="flex flex-wrap mt-2"></div>
+                </div>
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-xs font-bold text-slate-700">바론 ERP 개선</span>
+                        <span class="text-[10px] text-slate-400 shrink-0 ml-1">국혜림(임민경)</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mb-2">ERP 실무활용 및 기능개선</p>
+                    <div id="routine-ERP" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-att-ERP" class="flex flex-wrap mt-2"></div>
+                </div>
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-xs font-bold text-slate-700">법인관리</span>
+                        <span class="text-[10px] text-slate-400 shrink-0 ml-1">국혜림(임민경)</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mb-2">정보통신공사업, 측량업, 직접생산확인서, 기업부설연구소 외</p>
+                    <div id="routine-법인관리" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-att-법인관리" class="flex flex-wrap mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t flex justify-end items-center">
+            <button onclick="closeRoutineModal()" class="px-6 py-2 rounded bg-gray-100 text-xs font-medium">닫기</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// ★ 여기에 Apps Script 배포 URL을 입력하세요
+// ============================================================
+const DEFAULT_SCRIPT_URL = '';
+// ============================================================
+
+const today = new Date();
+const todayStr = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
+
+let projects = [];
+let routineData = {};
+let teamMemos = [];
+let ceoMemos = [];
+let isOfflineMode = false;
+
+// ── 초기화 ───────────────────────────────────────────────
+window.onload = () => {
+    document.getElementById('currentDateDisplay').innerText = todayStr;
+
+    const savedUrl = localStorage.getItem('sheets_script_url');
+    if (savedUrl) {
+        fetchFromSheets(savedUrl);
+    } else if (DEFAULT_SCRIPT_URL) {
+        fetchFromSheets(DEFAULT_SCRIPT_URL);
+    } else {
+        hideLoading();
+        document.getElementById('urlSetupOverlay').style.display = 'flex';
+    }
+};
+
+// ── 구글시트에서 데이터 가져오기 ─────────────────────────
+async function fetchFromSheets(url) {
+    const scriptUrl = url || localStorage.getItem('sheets_script_url') || DEFAULT_SCRIPT_URL;
+    if (!scriptUrl) { useOfflineMode(); return; }
+
+    showLoading('구글시트 데이터 불러오는 중...');
+    try {
+        const res = await fetch(scriptUrl);
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error);
+
+        const d = json.data;
+        projects   = d.projects  || [];
+        routineData= d.routines  || {};
+        teamMemos  = d.teamMemos || [];
+        ceoMemos   = d.ceoMemos  || [];
+        isOfflineMode = false;
+        setStatus(`마지막 동기화: ${todayStr}`);
+    } catch(e) {
+        console.warn('시트 로드 실패, 오프라인 모드로 전환:', e);
+        loadFromLocalStorage();
+        setStatus('⚠️ 오프라인 (로컬 데이터)');
+    }
+    hideLoading();
+    render();
+}
+
+// ── 오프라인(localStorage) ────────────────────────────────
+function loadFromLocalStorage() {
+    isOfflineMode = true;
+    projects    = JSON.parse(localStorage.getItem('biz_p_v11') || '[]');
+    routineData = JSON.parse(localStorage.getItem('routine_v11') || '{}');
+    teamMemos   = JSON.parse(localStorage.getItem('team_m_v11') || '[]');
+    ceoMemos    = JSON.parse(localStorage.getItem('ceo_m_v11')  || '[]');
+}
+
+function useOfflineMode() {
+    document.getElementById('urlSetupOverlay').style.display = 'none';
+    loadFromLocalStorage();
+    hideLoading();
+    setStatus('오프라인 모드');
+    render();
+}
+
+// ── URL 설정 ─────────────────────────────────────────────
+function openUrlSetup() { document.getElementById('urlSetupOverlay').style.display = 'flex'; }
+
+function saveScriptUrl() {
+    const url = document.getElementById('scriptUrlInput').value.trim();
+    if (!url || !url.startsWith('https://script.google.com')) {
+        alert('올바른 Apps Script URL을 입력해주세요.\nhttps://script.google.com/macros/s/... 형태여야 합니다.');
+        return;
+    }
+    localStorage.setItem('sheets_script_url', url);
+    document.getElementById('urlSetupOverlay').style.display = 'none';
+    fetchFromSheets(url);
+}
+
+// ── 렌더링 ───────────────────────────────────────────────
+function render() {
+    renderProjects();
+    renderTeamMemos();
+    renderCeoMemos();
+    renderRoutines();
+    renderReportTitle();
+}
+
+function renderReportTitle() {
+    const title = routineData['보고제목'] || '';
+    const el = document.getElementById('reportTitleDisplay');
+    if (title.trim()) {
+        el.textContent = '📌 ' + title;
+        el.classList.remove('hidden');
+    } else {
+        el.classList.add('hidden');
+    }
+}
+
+// ── 날짜 포맷 헬퍼 ───────────────────────────────────────
+function fmtDate(val) {
+    if (!val) return '';
+    // Date 객체 또는 날짜 문자열 모두 처리
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return String(val); // 파싱 불가면 원본 반환
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+}
+
+function renderProjects() {
+    const grid = document.getElementById('projectGrid');
+    grid.innerHTML = '';
+
+    if (projects.length === 0) {
+        grid.innerHTML = `<div class="col-span-3 flex flex-col items-center justify-center py-20 text-slate-300">
+            <p class="text-5xl mb-3">📋</p>
+            <p class="font-bold text-sm">구글시트에 데이터를 입력하거나</p>
+            <p class="text-xs mt-1">우측 상단 <strong>시트 연결</strong>을 눌러 연동하세요</p>
+        </div>`;
+        return;
+    }
+
+    projects.forEach((p, idx) => {
+        const progress = parseInt(p['진행률'] || p['progress'] || 0);
+        const status   = p['상태'] || p['status'] || '진행';
+        const imp      = p['우선순위'] || p['importance'] || '중';
+        const title    = p['업무명'] || p['title'] || '(제목 없음)';
+        const pm       = p['PM'] || p['pmText'] || '';
+        const startD   = fmtDate(p['착수일'] || p['startDate'] || '');
+        const planD    = fmtDate(p['계획종료일'] || p['planDate'] || '');
+        const collab   = p['협업팀'] || p['collab'] || '';
+        const issue    = p['이슈사항'] || p['issue'] || '';
+
+        // 계획 공정 계산 (착수일~계획종료일 기준 오늘 위치)
+        let planPct = '';
+        if (startD && planD) {
+            const s = new Date(startD), e = new Date(planD), now = new Date();
+            if (!isNaN(s) && !isNaN(e) && e > s) {
+                const pct = Math.min(100, Math.max(0, Math.round((now - s) / (e - s) * 100)));
+                planPct = pct;
+            }
+        }
+
+        const hasIssue = issue && issue.trim() !== '';
+        // 일정 지연 여부
+        const isLate = planPct !== '' && progress < planPct;
+        // 수행기간(총일수) & 경과일 계산
+        let durDays = null, elapsedDays = null;
+        if (startD && planD) {
+            const s = new Date(startD), e = new Date(planD), now = new Date();
+            if (!isNaN(s) && !isNaN(e) && e >= s) {
+                durDays    = Math.round((e - s) / 86400000);
+                elapsedDays= Math.max(0, Math.min(durDays, Math.round((now - s) / 86400000)));
+            }
+        }
+
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-4 shadow-sm hover:shadow-lg transition-all cursor-pointer';
+        card.onclick = () => openModal(idx);
+
+        card.innerHTML = `
+            <div class="flex justify-between items-start gap-2">
+                <p class="font-bold text-slate-800 text-base leading-snug flex-1">${title}</p>
+                <span class="badge-${imp} text-xs font-bold px-2.5 py-1 rounded-full shrink-0">${imp}</span>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="status-${status} text-xs font-bold px-2.5 py-1 rounded-full">${status}</span>
+                ${pm ? `<span class="text-xs text-slate-500">PM: ${pm}</span>` : ''}
+                ${collab ? `<span class="text-xs text-slate-400 border-l border-slate-200 pl-2">🤝 ${collab}</span>` : ''}
+            </div>
+            <div>
+                <div class="flex justify-between text-xs text-slate-400 mb-1.5">
+                    <span class="font-medium">진행률</span>
+                    <span class="font-bold text-slate-700">${progress}%${planPct !== '' ? ` <span class="text-slate-400 font-normal">/ 계획 ${planPct}%</span>` : ''}</span>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2">
+                    <div class="h-2 rounded-full transition-all" style="width:${progress}%; background:${progress>=100?'#10b981':progress>=50?'#496259':'#BD5429'}"></div>
+                </div>
+            </div>
+            <div class="border-t border-gray-100 pt-3 space-y-2">
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="flex flex-col gap-0.5">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">착수</span>
+                        <span class="font-semibold text-slate-700">${startD || '-'}</span>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">완료예정</span>
+                        <span class="font-semibold ${isLate ? 'text-red-500' : 'text-slate-700'}">${planD || '-'}${isLate ? ' ⚠' : ''}</span>
+                    </div>
+                </div>
+                ${durDays !== null ? `<div class="flex items-center gap-2 bg-slate-50 rounded-lg px-2.5 py-1.5 text-xs">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight shrink-0">수행기간</span>
+                    <span class="font-bold text-slate-700">${durDays}일</span>
+                    <span class="text-slate-400 ml-auto">${elapsedDays}일 경과</span>
+                </div>` : ''}
+            </div>
+            ${hasIssue ? `<div class="bg-red-50 rounded-lg p-3 text-xs text-red-700 font-medium border border-red-200 overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;">⚠️ ${issue}</div>` : ''}
+            <button class="w-full py-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-600 border border-slate-200 transition-all mt-auto">과업 상세보기</button>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function renderTeamMemos() {
+    const list = document.getElementById('teamMemoList');
+    list.innerHTML = '';
+    if (teamMemos.length === 0) {
+        list.innerHTML = `<p class="text-xs text-gray-300 text-center mt-4">구글시트 <strong>팀공유사항</strong> 탭에 입력하세요</p>`;
+        return;
+    }
+    teamMemos.forEach(m => {
+        const hasStatus = m.status && m.status.trim() && m.status !== '담당자 확인';
+        list.innerHTML += `<div class="p-3 border-b border-slate-100 flex flex-col gap-1">
+            <div class="flex items-center justify-between gap-1">
+                <span class="text-xs font-bold text-[#496259]">${m.author || ''}</span>
+                ${m.projectId ? `<span class="text-[10px] text-slate-400 truncate max-w-24">${m.projectId}</span>` : ''}
+                ${hasStatus ? `<span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded shrink-0">${m.status}</span>` : ''}
+            </div>
+            <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${m.text || ''}</p>
+        </div>`;
+    });
+}
+
+function renderCeoMemos() {
+    const list = document.getElementById('ceoMemoList');
+    list.innerHTML = '';
+    if (ceoMemos.length === 0) {
+        list.innerHTML = `<p class="text-xs text-orange-200 text-center mt-4">구글시트 <strong>사장님지시사항</strong> 탭에 입력하세요</p>`;
+        return;
+    }
+    // 시트 드롭다운 값과 일치하도록 모든 상태값 색상 매핑
+    // 시트에 없는 값도 자동으로 색상이 지정되도록 동적 처리
+    const statusColor = {
+        // 기존 값
+        '담당자 확인': 'bg-slate-600',
+        '반영 예정':   'bg-blue-600',
+        '별도 보고':   'bg-purple-600',
+        '협의 필요':   'bg-orange-500',
+        // 시트 드롭다운 추가값 — 필요시 여기에 계속 추가
+        '추진 예정':   'bg-green-600',
+        '계획 검토':   'bg-yellow-500',
+        '완료':        'bg-emerald-600',
+        '보류':        'bg-gray-500',
+        '긴급':        'bg-red-600',
+    };
+    // 위에 없는 값은 텍스트 길이 기반으로 색상 자동 배정
+    function getStatusColor(status) {
+        if (statusColor[status]) return statusColor[status];
+        const colors = ['bg-slate-500','bg-teal-600','bg-cyan-600','bg-indigo-500','bg-rose-500'];
+        return colors[status.length % colors.length];
+    }
+
+    ceoMemos.forEach(m => {
+        const sc = getStatusColor(m.status || '');
+        const hasStatus = m.status && m.status.trim();
+        list.innerHTML += `<div class="bg-white p-3 rounded-lg border border-orange-100 space-y-1.5 shadow-sm">
+            <div class="flex items-center gap-1 flex-wrap">
+                ${m.projectId ? `<span class="text-[10px] font-bold bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">${m.projectId}</span>` : ''}
+                ${hasStatus ? `<span class="text-[10px] font-bold ${sc} text-white px-2 py-0.5 rounded ml-auto">${m.status}</span>` : ''}
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">${m.text || ''}</p>
+        </div>`;
+    });
+}
+
+function renderRoutines() {
+    const keys = ['경영현황','동종업계','지재권','CCP','팀지원','바론사업','ERP','법인관리'];
+    keys.forEach(k => {
+        const el = document.getElementById('routine-' + k);
+        if (el) el.textContent = routineData[k] || '(내용 없음)';
+        const attEl = document.getElementById('routine-att-' + k);
+        if (attEl) renderRoutineAtt(attEl, routineData[k + '_파일'] || '');
+    });
+}
+
+function renderRoutineAtt(container, raw) {
+    container.innerHTML = '';
+    if (!raw.trim()) return;
+    raw.split('\n').forEach(line => {
+        line = line.trim(); if (!line) return;
+        const parts = line.split('|');
+        const name = parts[0].trim();
+        const url  = (parts[1] || '').trim();
+        const finalUrl = url || (name.startsWith('http') ? name : '');
+        const a = document.createElement('a');
+        a.textContent = '\uD83D\uDCC4 ' + name;
+        a.className = 'inline-flex items-center text-xs font-semibold text-[#496259] bg-slate-100 hover:bg-[#496259] hover:text-white px-2.5 py-1 rounded-full border border-slate-200 transition-all cursor-pointer mr-1 mb-1';
+        if (finalUrl) {
+            a.title = finalUrl;
+            a.addEventListener('click', function(e) {
+                e.stopPropagation(); e.preventDefault();
+                window.open(finalUrl, '_blank', 'noopener,noreferrer');
+            });
+        } else { a.style.opacity='0.5'; a.style.cursor='default'; }
+        container.appendChild(a);
+    });
+}
+
+// ── 모달 ─────────────────────────────────────────────────
+function openModal(idx) {
+    const p = projects[idx];
+    document.getElementById('modalTitle').innerText = (p['업무명'] || p['title'] || '').replace(/\n/g,' ');
+    document.getElementById('mPm').value      = p['PM'] || p['pmText'] || '';
+    document.getElementById('mCollab').value  = p['협업팀'] || p['collab'] || '';
+    document.getElementById('mGoals').value   = p['과업내용'] || p['goals'] || '';
+    document.getElementById('mIssue').value   = p['이슈사항'] || p['issue'] || '';
+    document.getElementById('mSeminars').value= p['회의이력'] || p['seminars'] || '';
+
+    // 붙임파일/하이퍼링크 렌더링
+    // 구글시트에서 '붙임파일' 컬럼: "파일명|URL" 형식으로 여러 개는 줄바꿈(\n)으로 구분
+    const attBox = document.getElementById('mAttachments');
+    attBox.innerHTML = '';
+    const rawAtt = p['붙임파일'] || p['attachments'] || '';
+    if (rawAtt.trim()) {
+        const label = document.createElement('span');
+        label.className = 'text-xs font-bold text-slate-400 mr-1 shrink-0';
+        label.textContent = '📎 붙임파일:';
+        attBox.appendChild(label);
+        rawAtt.split('\n').forEach(line => {
+            line = line.trim();
+            if (!line) return;
+            const parts = line.split('|');
+            const name = parts[0].trim();
+            const url  = (parts[1] || '').trim();
+
+            const a = document.createElement('a');
+            a.textContent = '📄 ' + name;
+            a.className = 'inline-flex items-center gap-1 text-xs font-semibold text-[#496259] bg-slate-100 hover:bg-[#496259] hover:text-white px-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer';
+
+            const finalUrl = url || (name.startsWith('http') ? name : '');
+
+            if (finalUrl) {
+                a.title = finalUrl;
+                // ★ 카드 전체 onclick이 링크를 가로채지 못하도록 전파 차단 후 새 탭 열기
+                a.addEventListener('click', e => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    window.open(finalUrl, '_blank', 'noopener,noreferrer');
+                });
+            } else {
+                a.style.opacity = '0.5';
+                a.style.cursor = 'default';
+            }
+
+            attBox.appendChild(a);
+        });
+    }
+
+    document.getElementById('modalOverlay').style.display = 'flex';
+}
+function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+
+function openRoutineModal() { document.getElementById('routineModalOverlay').style.display = 'flex'; }
+function closeRoutineModal() { document.getElementById('routineModalOverlay').style.display = 'none'; }
+
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(`tab-${name}`).classList.remove('hidden');
+    btn.classList.add('active');
+}
+
+// ── 유틸 ─────────────────────────────────────────────────
+function showLoading(msg) {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.querySelector('#loadingOverlay p').textContent = msg || '로딩 중...';
+}
+function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
+function setStatus(msg) { document.getElementById('syncStatus').textContent = msg; }
+</script>
+</body>
+</html>
