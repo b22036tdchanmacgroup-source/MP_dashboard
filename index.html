@@ -37,6 +37,13 @@
         .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #496259; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+
+        .card-warn   { border: 2px solid #f97316 !important; background: #fff7ed !important; }
+        .card-danger { border: 2px solid #ef4444 !important; background: #fff5f5 !important; }
+        .left-panel  { background: #F0F4F8; }
+        .right-panel { background: #FFFFFF; }
+        .panel-title { font-size: 15px; font-weight: 800; letter-spacing: -0.3px; }
+        .summary-bar { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
         /* URL 설정 모달 */
         #urlSetupOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; justify-content: center; align-items: center; }
     </style>
@@ -83,7 +90,7 @@
     <header class="header-gradient text-white px-5 py-3 flex justify-between items-center">
         <div class="flex flex-col gap-0.5">
             <div class="flex items-center gap-3">
-                <h1 class="text-xl font-bold tracking-tighter">경영기획팀 전략 대시보드</h1>
+                <h1 class="font-black tracking-tight leading-tight" style="font-size:16px">한맥가족 총괄기획실<br><span style="font-size:20px">경영기획팀 업무 현황 대시보드</span></h1>
                 <span class="text-sm font-normal opacity-50">2026 2Q Portal</span>
                 <div id="syncStatus" class="text-[10px] opacity-60"></div>
             </div>
@@ -116,26 +123,51 @@
         </div>
     </header>
 
-    <main class="flex-1 p-6 grid grid-cols-12 gap-6" style="min-height:calc(100vh - 64px)">
-        <!-- LEFT: MEMO SIDEBAR -->
-        <div class="col-span-3 flex flex-col space-y-5 border-r pr-4">
-            <div class="bg-white rounded-xl p-5 border border-gray-200 flex flex-col shadow-sm" style="min-height:420px">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-black text-slate-500 uppercase tracking-tighter">팀 공유사항</h3>
-                </div>
-                <div id="teamMemoList" class="flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
+    <main class="flex-1 grid grid-cols-12" style="min-height:calc(100vh - 68px)">
+
+        <!-- LEFT PANEL: 주요 공유사항 -->
+        <div class="col-span-3 left-panel flex flex-col p-5 gap-4 border-r-2 border-[#496259]/20">
+            <div class="flex items-center gap-2 pb-2 border-b-2 border-[#496259]">
+                <span class="text-lg font-black text-[#496259] tracking-tight">주요 공유사항</span>
             </div>
-            <div class="bg-orange-50 rounded-xl p-5 border border-orange-100 flex flex-col shadow-inner" style="min-height:280px">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-black text-[#BD5429] uppercase tracking-tighter">사장님 지시/이슈 사항</h3>
+
+            <!-- 팀 공유사항 -->
+            <div class="bg-white rounded-xl p-4 border border-slate-200 flex flex-col shadow-sm flex-1" style="min-height:340px">
+                <div class="flex items-center gap-1.5 mb-3">
+                    <span class="w-1 h-5 rounded-full bg-[#496259] inline-block shrink-0"></span>
+                    <h3 class="panel-title text-slate-700">팀 공유사항</h3>
                 </div>
-                <div id="ceoMemoList" class="flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
+                <div id="teamMemoList" class="flex-1 overflow-y-auto custom-scrollbar space-y-2"></div>
+            </div>
+
+            <!-- 지시사항, 협의사항 -->
+            <div class="bg-orange-50 rounded-xl p-4 border border-orange-200 flex flex-col" style="min-height:260px">
+                <div class="flex items-center gap-1.5 mb-3">
+                    <span class="w-1 h-5 rounded-full bg-[#BD5429] inline-block shrink-0"></span>
+                    <h3 class="panel-title text-[#BD5429]">지시사항, 협의사항</h3>
+                </div>
+                <div id="ceoMemoList" class="flex-1 overflow-y-auto custom-scrollbar space-y-2"></div>
             </div>
         </div>
 
-        <!-- RIGHT: PROJECT GRID -->
-        <div class="col-span-9 flex flex-col">
-            <div id="projectGrid" class="grid grid-cols-3 gap-5 pb-8">
+        <!-- RIGHT PANEL: 과업수행 현황 -->
+        <div class="col-span-9 right-panel flex flex-col p-5">
+            <!-- (1)-7 Summary Bar -->
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg font-black text-slate-700 tracking-tight">과업수행 현황 및 계획</span>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-100 rounded-xl px-4 py-2 text-xs">
+                    <span class="text-slate-500 font-bold">전체</span>
+                    <strong id="sum-total" class="text-slate-800 text-sm">0</strong>
+                    <span class="w-px h-4 bg-slate-300"></span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-slate-500">정상</span><strong id="sum-ok" class="text-emerald-700">0</strong></span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-400"></span><span class="text-slate-500">지연</span><strong id="sum-late" class="text-orange-600">0</strong></span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-400"></span><span class="text-slate-500">보류</span><strong id="sum-hold" class="text-yellow-700">0</strong></span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-400"></span><span class="text-slate-500">완료</span><strong id="sum-done" class="text-blue-700">0</strong></span>
+                </div>
+            </div>
+            <div id="projectGrid" class="grid grid-cols-3 gap-4 pb-8 overflow-y-auto">
             </div>
         </div>
     </main>
@@ -144,11 +176,51 @@
 <!-- ==================== MODAL: 과업 상세보기 ==================== -->
 <div id="modalOverlay">
     <div class="modal-content relative">
-        <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <h2 id="modalTitle" class="text-2xl font-bold text-slate-800 tracking-tight">과업 상세보기</h2>
-            <button onclick="closeModal()" class="text-gray-400 hover:text-black text-4xl">&times;</button>
+        <!-- 모달 개요 헤더 -->
+        <div class="bg-gradient-to-r from-[#496259] to-[#2D3E38] rounded-xl px-6 py-5 mb-5 text-white">
+            <div class="flex justify-between items-start gap-4">
+                <!-- 좌: 과업명 + 담당 정보 -->
+                <div class="flex-1 min-w-0">
+                    <h2 id="modalTitle" class="text-2xl font-black tracking-tight mb-3 leading-snug">과업명</h2>
+                    <!-- 인적 정보: PM·담당자·협업팀 -->
+                    <div class="flex flex-wrap gap-2 text-xs mb-2">
+                        <div class="bg-white/15 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                            <span class="opacity-60">PM</span><span id="mPmBadge" class="font-bold"></span>
+                        </div>
+                        <div class="bg-white/15 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                            <span class="opacity-60">담당자</span><span id="mAssigneeBadge" class="font-bold"></span>
+                        </div>
+                        <div class="bg-white/15 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                            <span class="opacity-60">협업팀</span><span id="mCollabBadge" class="font-bold"></span>
+                        </div>
+                    </div>
+                     <!-- 일정 정보: 착수·완료예정·기간 -->
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <div class="bg-black/20 border border-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2">
+                            <span class="text-[10px] uppercase font-bold opacity-50 tracking-wider">착수</span>
+                            <span id="mStartBadge" class="font-black text-sm text-emerald-300"></span>
+                        </div>
+                        <div class="bg-black/20 border border-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2">
+                            <span class="text-[10px] uppercase font-bold opacity-50 tracking-wider">완료예정</span>
+                            <span id="mPlanBadge" class="font-black text-sm text-orange-300"></span>
+                        </div>
+                        <div id="mDurBadge" class="bg-white/10 border border-white/15 rounded-lg px-3 py-1.5 items-center gap-1.5" style="display:none">
+                            <span class="text-[10px] uppercase font-bold opacity-50 tracking-wider">기간</span>
+                            <span id="mDurTotal" class="font-black text-sm text-white ml-1"></span>
+                            <span class="opacity-30 mx-1">|</span>
+                            <span id="mDurElapsed" class="text-[11px] font-bold text-sky-300"></span>
+                            <span class="opacity-30 mx-0.5">/</span>
+                            <span id="mDurRemain" class="text-[11px] font-bold text-yellow-300"></span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 우: 주요 URL 버튼 (강조 영역) -->
+                <div class="shrink-0 flex flex-col items-end gap-2">
+                   <div id="mUrlLinks" class="flex flex-wrap gap-1.5 justify-end max-w-48"></div>
+                </div>
+            </div>
         </div>
-        <div class="grid grid-cols-12 gap-6" style="height:600px">
+        <div class="grid grid-cols-12 gap-6" style="height:490px">
             <div class="col-span-5 flex flex-col gap-3 h-full">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -156,8 +228,9 @@
                         <input type="text" id="mPm" class="w-full border rounded px-3 py-2 font-medium bg-gray-50 text-sm" readonly>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-tighter">협업부서</label>
-                        <input type="text" id="mCollab" class="w-full border rounded px-3 py-2 font-medium bg-gray-50 text-sm" readonly>
+                        <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-tighter">담당자</label>
+                        <input type="text" id="mAssignee" class="w-full border rounded px-3 py-2 font-medium bg-gray-50 text-sm" readonly>
+                    <input type="hidden" id="mCollab">
                     </div>
                 </div>
                 <div class="flex flex-col" style="flex:3">
@@ -176,9 +249,11 @@
                 </div>
             </div>
         </div>
-        <div class="mt-6 flex justify-end border-t pt-4">
-            <div id="mAttachments" class="mr-auto flex flex-wrap gap-2 items-center"></div>
-            <button onclick="closeModal()" class="px-6 py-2 rounded bg-gray-100 text-xs font-medium">닫기</button>
+        <div class="mt-4 border-t pt-3">
+            <div id="mAttachments" class="flex flex-wrap gap-2 items-center mb-3"></div>
+            <div class="flex justify-end">
+                <button onclick="closeModal()" class="px-8 py-2 rounded-lg bg-slate-700 hover:bg-slate-800 text-white text-sm font-bold transition-all">닫기</button>
+            </div>
         </div>
     </div>
 </div>
@@ -421,7 +496,7 @@ function renderQuickLinks() {
         const url   = (routineData['바로가기' + i + '_URL']    || '').trim();
         if (!label) continue;
         const btn = document.createElement('button');
-        btn.className = 'flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 transition-all min-w-[48px]';
+        btn.className = 'flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 transition-all min-w-[48px]';
         btn.title = label + (url ? ' → ' + url : '');
         btn.innerHTML = '<span class="text-base leading-none">' + (icon || '🔗') + '</span>'
                       + '<span class="text-[9px] font-semibold opacity-90 whitespace-nowrap leading-tight">' + label + '</span>';
@@ -457,8 +532,11 @@ function renderProjects() {
             <p class="font-bold text-sm">구글시트에 데이터를 입력하거나</p>
             <p class="text-xs mt-1">우측 상단 <strong>시트 연결</strong>을 눌러 연동하세요</p>
         </div>`;
+        updateSummary([]);
         return;
     }
+
+    updateSummary(projects);
 
     projects.forEach((p, idx) => {
         const progress = parseInt(p['진행률'] || p['progress'] || 0);
@@ -471,75 +549,109 @@ function renderProjects() {
         const collab   = p['협업팀'] || p['collab'] || '';
         const issue    = p['이슈사항'] || p['issue'] || '';
 
-        // 계획 공정 계산 (착수일~계획종료일 기준 오늘 위치)
-        let planPct = '';
+        // 계획 공정
+        let planPct = null;
         if (startD && planD) {
             const s = new Date(startD), e = new Date(planD), now = new Date();
-            if (!isNaN(s) && !isNaN(e) && e > s) {
-                const pct = Math.min(100, Math.max(0, Math.round((now - s) / (e - s) * 100)));
-                planPct = pct;
-            }
+            if (!isNaN(s) && !isNaN(e) && e > s)
+                planPct = Math.min(100, Math.max(0, Math.round((now - s) / (e - s) * 100)));
         }
 
-        const hasIssue = issue && issue.trim() !== '';
-        // 일정 지연 여부
-        const isLate = planPct !== '' && progress < planPct;
-        // 수행기간(총일수) & 경과일 계산
-        let durDays = null, elapsedDays = null;
-        if (startD && planD) {
-            const s = new Date(startD), e = new Date(planD), now = new Date();
-            if (!isNaN(s) && !isNaN(e) && e >= s) {
-                durDays    = Math.round((e - s) / 86400000);
-                elapsedDays= Math.max(0, Math.min(durDays, Math.round((now - s) / 86400000)));
-            }
+        // 지연 판정 (2-4: 10%p 이상)
+        const lag      = planPct !== null ? planPct - progress : 0;
+        const isLate   = lag > 0;
+        const isSevere = lag >= 10;
+
+        // D-day (2-1)
+        let dday = '';
+        if (planD) {
+            const e = new Date(planD), now = new Date();
+            now.setHours(0,0,0,0); e.setHours(0,0,0,0);
+            const diff = Math.round((e - now) / 86400000);
+            dday = diff > 0 ? 'D-' + diff : diff === 0 ? 'D-day' : 'D+' + Math.abs(diff);
         }
+
+        // 진행률 바 색상
+        const barBg = progress >= 100 ? '#10b981' : isSevere ? '#ef4444' : isLate ? '#f97316' : '#496259';
+
+        // 이슈 줄별 (2-3)
+        const issueIcons = ['·','·','·','·','·','·'];
+        let issueHtml = '';
+        if (issue && issue.trim()) {
+            const lines = issue.trim().split('\n').filter(l => l.trim());
+            issueHtml = `<div class="bg-red-50 rounded-lg px-2.5 py-2 border border-red-200">`
+            + `<div class="text-[10px] font-black text-red-600 mb-1.5">⚠️ 이슈사항</div>`
+            + `<ul class="space-y-1">`
+            + lines.slice(0,5).map(l =>
+                `<li class="flex items-start gap-1.5 text-xs text-red-700 leading-snug"><span class="shrink-0 mt-0.5 text-red-400">•</span><span>${l.trim()}</span></li>`
+            ).join('')
+            + (lines.length > 5 ? `<li class="text-[10px] text-red-400 pl-3">+ ${lines.length-5}건 더</li>` : '')
+            + `</ul></div>`;
+        }
+
+        // 카드 스타일 (2-4)
+        let cardCls = 'bg-white rounded-2xl border border-gray-200 p-4 flex flex-col gap-3 shadow-sm hover:shadow-lg transition-all cursor-pointer';
+        if (status === '보류')  cardCls = 'bg-slate-50 rounded-2xl border border-slate-200 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-all cursor-pointer opacity-75';
+        else if (isSevere)      cardCls = 'card-danger rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-lg transition-all cursor-pointer';
+        else if (isLate)        cardCls = 'card-warn rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-lg transition-all cursor-pointer';
 
         const card = document.createElement('div');
-        card.className = 'bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-4 shadow-sm hover:shadow-lg transition-all cursor-pointer';
+        card.className = cardCls;
         card.onclick = () => openModal(idx);
 
         card.innerHTML = `
             <div class="flex justify-between items-start gap-2">
                 <p class="font-bold text-slate-800 text-base leading-snug flex-1">${title}</p>
-                <span class="badge-${imp} text-xs font-bold px-2.5 py-1 rounded-full shrink-0">${imp}</span>
+                <span class="badge-${imp} text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">${imp}</span>
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
-                <span class="status-${status} text-xs font-bold px-2.5 py-1 rounded-full">${status}</span>
-                ${pm ? `<span class="text-xs text-slate-500">PM: ${pm}</span>` : ''}
-                ${collab ? `<span class="text-xs text-slate-400 border-l border-slate-200 pl-2">🤝 ${collab}</span>` : ''}
+            <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="status-${status} text-[11px] font-bold px-2 py-0.5 rounded-full">${status}</span>
+                ${pm ? `<span class="text-xs font-semibold text-slate-600">PM: ${pm}</span>` : ''}
+                ${collab ? `<span class="text-xs text-slate-500 border-l border-slate-200 pl-1.5">🤝 ${collab}</span>` : ''}
             </div>
             <div>
-                <div class="flex justify-between text-xs text-slate-400 mb-1.5">
-                    <span class="font-medium">진행률</span>
-                    <span class="font-bold text-slate-700">${progress}%${planPct !== '' ? ` <span class="text-slate-400 font-normal">/ 계획 ${planPct}%</span>` : ''}</span>
+                <div class="flex justify-between items-center text-xs mb-1.5">
+                    <span class="font-bold text-slate-700">${progress}%${planPct!==null?` <span class="font-normal text-slate-400">/ 계획 ${planPct}%</span>`:''}${isSevere?` <span class="text-red-600 font-black ml-1">⚠ ${lag}%p↓</span>`:''}</span>
+                    ${dday ? `<span class="font-bold text-xs ${dday.startsWith('D+')?'text-red-500':dday==='D-day'?'text-orange-500':'text-slate-500'}">${dday}</span>` : ''}
                 </div>
-                <div class="w-full bg-gray-100 rounded-full h-2">
-                    <div class="h-2 rounded-full transition-all" style="width:${progress}%; background:${progress>=100?'#10b981':progress>=50?'#496259':'#BD5429'}"></div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="h-2 rounded-full" style="width:${progress}%;background:${barBg}"></div>
                 </div>
             </div>
-            <div class="border-t border-gray-100 pt-3 space-y-2">
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div class="flex flex-col gap-0.5">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">착수</span>
-                        <span class="font-semibold text-slate-700">${startD || '-'}</span>
-                    </div>
-                    <div class="flex flex-col gap-0.5">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">완료예정</span>
-                        <span class="font-semibold ${isLate ? 'text-red-500' : 'text-slate-700'}">${planD || '-'}${isLate ? ' ⚠' : ''}</span>
-                    </div>
-                </div>
-                ${durDays !== null ? `<div class="flex items-center gap-2 bg-slate-50 rounded-lg px-2.5 py-1.5 text-xs">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight shrink-0">수행기간</span>
-                    <span class="font-bold text-slate-700">${durDays}일</span>
-                    <span class="text-slate-400 ml-auto">${elapsedDays}일 경과</span>
-                </div>` : ''}
-            </div>
-            ${hasIssue ? `<div class="bg-red-50 rounded-lg p-3 text-xs text-red-700 font-medium border border-red-200 overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;">⚠️ ${issue}</div>` : ''}
-            <button class="w-full py-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-600 border border-slate-200 transition-all mt-auto">과업 상세보기</button>
+            ${issueHtml}
+            <button class="w-full py-2 rounded-lg bg-[#496259] hover:bg-[#384e46] text-xs font-bold text-white border border-[#496259]/30 transition-all mt-auto">과업 상세보기 →</button>
         `;
         grid.appendChild(card);
     });
 }
+
+function updateSummary(projs) {
+    let ok=0, late=0, hold=0, done=0;
+    projs.forEach(p => {
+        const st  = p['상태'] || p['status'] || '진행';
+        const prg = parseInt(p['진행률'] || 0);
+        if (st === '보류') { hold++; return; }
+        if (st === '완료' || prg >= 100) { done++; return; }
+        const startD = fmtDate(p['착수일'] || '');
+        const planD  = fmtDate(p['계획종료일'] || '');
+        let planPct  = null;
+        if (startD && planD) {
+            const s = new Date(startD), e = new Date(planD), now = new Date();
+            if (!isNaN(s) && !isNaN(e) && e > s)
+                planPct = Math.min(100, Math.max(0, Math.round((now-s)/(e-s)*100)));
+        }
+        if (planPct !== null && (planPct - prg) >= 10) late++;
+        else ok++;
+    });
+    const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+    set('sum-total', projs.length);
+    set('sum-ok',    ok);
+    set('sum-late',  late);
+    set('sum-hold',  hold);
+    set('sum-done',  done);
+}
+
+
 
 function renderTeamMemos() {
     const list = document.getElementById('teamMemoList');
@@ -550,11 +662,11 @@ function renderTeamMemos() {
     }
     teamMemos.forEach(m => {
         const hasStatus = m.status && m.status.trim() && m.status !== '담당자 확인';
-        list.innerHTML += `<div class="p-3 border-b border-slate-100 flex flex-col gap-1">
-            <div class="flex items-center justify-between gap-1">
-                <span class="text-xs font-bold text-[#496259]">${m.author || ''}</span>
-                ${m.projectId ? `<span class="text-[10px] text-slate-400 truncate max-w-24">${m.projectId}</span>` : ''}
-                ${hasStatus ? `<span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded shrink-0">${m.status}</span>` : ''}
+        list.innerHTML += `<div class="px-3 py-2.5 border-b border-slate-100 flex flex-col gap-1.5">
+            <div class="flex items-center gap-1.5 flex-wrap min-w-0">
+                ${m.projectId ? `<span class="text-xs font-black text-[#496259] bg-[#496259]/10 px-2 py-0.5 rounded shrink-0">[${m.projectId}]</span>` : ''}
+                <span class="text-sm font-bold text-slate-700 flex-1 min-w-0 truncate">${m.author || ''}</span>
+                ${hasStatus ? `<span class="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded shrink-0">[${m.status}]</span>` : ''}
             </div>
             <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${m.text || ''}</p>
         </div>`;
@@ -590,15 +702,20 @@ function renderCeoMemos() {
         return colors[status.length % colors.length];
     }
 
-    ceoMemos.forEach(m => {
+    const sorted = [...ceoMemos].reverse();
+    sorted.forEach((m, i) => {
         const sc = getStatusColor(m.status || '');
         const hasStatus = m.status && m.status.trim();
-        list.innerHTML += `<div class="bg-white p-3 rounded-lg border border-orange-100 space-y-1.5 shadow-sm">
+        const isNewest = i === 0;
+        list.innerHTML += `<div class="${isNewest
+            ? 'bg-[#BD5429]/10 p-3 rounded-lg border-2 border-[#BD5429]/40 space-y-1.5'
+            : 'bg-white p-2.5 rounded-lg border border-orange-100 space-y-1'}">
+            ${isNewest ? '<div class="text-[10px] font-black text-[#BD5429] mb-1">🔔 최신 지시사항</div>' : ''}
             <div class="flex items-center gap-1 flex-wrap">
                 ${m.projectId ? `<span class="text-[10px] font-bold bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">${m.projectId}</span>` : ''}
                 ${hasStatus ? `<span class="text-[10px] font-bold ${sc} text-white px-2 py-0.5 rounded ml-auto">${m.status}</span>` : ''}
             </div>
-            <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">${m.text || ''}</p>
+            <p class="${isNewest ? 'text-sm' : 'text-xs'} text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">${m.text || ''}</p>
         </div>`;
     });
 }
@@ -639,12 +756,57 @@ function renderRoutineAtt(container, raw) {
 // ── 모달 ─────────────────────────────────────────────────
 function openModal(idx) {
     const p = projects[idx];
-    document.getElementById('modalTitle').innerText = (p['업무명'] || p['title'] || '').replace(/\n/g,' ');
-    document.getElementById('mPm').value      = p['PM'] || p['pmText'] || '';
-    document.getElementById('mCollab').value  = p['협업팀'] || p['collab'] || '';
-    document.getElementById('mGoals').value   = p['과업내용'] || p['goals'] || '';
-    document.getElementById('mIssue').value   = p['이슈사항'] || p['issue'] || '';
-    document.getElementById('mSeminars').value= p['회의이력'] || p['seminars'] || '';
+    const pm       = p['PM'] || p['pmText'] || '';
+    const assignee = p['담당자'] || '';
+    const collab   = p['협업팀'] || p['collab'] || '';
+    const startD   = fmtDate(p['착수일'] || p['startDate'] || '');
+    const planD    = fmtDate(p['계획종료일'] || p['planDate'] || '');
+
+    document.getElementById('modalTitle').innerText   = (p['업무명'] || p['title'] || '').replace(/\n/g,' ');
+    document.getElementById('mPmBadge').textContent       = pm || '-';
+    document.getElementById('mAssigneeBadge').textContent = assignee || '-';
+    document.getElementById('mCollabBadge').textContent   = collab || '-';
+    document.getElementById('mStartBadge').textContent    = startD || '-';
+    document.getElementById('mPlanBadge').textContent     = planD || '-';
+    const durBadge = document.getElementById('mDurBadge');
+    if (startD && planD) {
+        const _s = new Date(startD), _e = new Date(planD), _n = new Date();
+        _s.setHours(0,0,0,0); _e.setHours(0,0,0,0); _n.setHours(0,0,0,0);
+        const total   = Math.round((_e - _s) / 86400000);
+        const elapsed = Math.max(0, Math.min(total, Math.round((_n - _s) / 86400000)));
+        const remain  = Math.max(0, Math.round((_e - _n) / 86400000));
+        document.getElementById('mDurTotal').textContent   = '총 ' + total + '일';
+        document.getElementById('mDurElapsed').textContent = '진행 ' + elapsed + '일';
+        document.getElementById('mDurRemain').textContent  = '잔여 ' + remain + '일';
+        durBadge.style.display = 'flex';
+    } else {
+        durBadge.style.display = 'none';
+    }
+    document.getElementById('mPm').value       = pm;
+    document.getElementById('mAssignee').value = assignee;
+    const mCollabEl = document.getElementById('mCollab'); if(mCollabEl) mCollabEl.value = collab;
+    document.getElementById('mGoals').value    = p['과업내용'] || p['goals'] || '';
+    document.getElementById('mIssue').value    = p['이슈사항'] || p['issue'] || '';
+    document.getElementById('mSeminars').value = p['회의이력'] || p['seminars'] || '';
+
+    // 주요 URL 버튼 (3-2) — 구글시트 프로젝트탭 "주요URL" 컬럼: 제목|URL (줄바꿈으로 여러 개)
+    const urlBox = document.getElementById('mUrlLinks');
+    urlBox.innerHTML = '';
+    const rawUrls = (p['주요URL'] || p['주요 URL'] || '').trim();
+    if (rawUrls) {
+        rawUrls.split('\n').forEach(line => {
+            line = line.trim(); if (!line) return;
+            const parts = line.split('|');
+            const name = parts[0].trim();
+            const url  = (parts[1] || '').trim();
+            const finalUrl = url || (name.startsWith('http') ? name : '');
+            const btn = document.createElement('button');
+            btn.innerHTML = '🔗 ' + name;
+            btn.className = 'text-[11px] font-bold bg-amber-400 hover:bg-amber-300 text-amber-900 px-3 py-1.5 rounded-lg border border-amber-300 transition-all shadow-sm';
+            if (finalUrl) btn.addEventListener('click', e => { e.stopPropagation(); window.open(finalUrl,'_blank','noopener,noreferrer'); });
+            urlBox.appendChild(btn);
+        });
+    }
 
     // 붙임파일/하이퍼링크 렌더링
     // 구글시트에서 '붙임파일' 컬럼: "파일명|URL" 형식으로 여러 개는 줄바꿈(\n)으로 구분
