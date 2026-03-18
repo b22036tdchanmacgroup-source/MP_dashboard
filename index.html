@@ -26,7 +26,7 @@
         .modal-content { background: white; width: 1100px; max-height: 85vh; border-radius: 12px; padding: 35px; overflow-y: auto; }
 
         #routineModalOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
-        .routine-modal-content { background: white; width: 1080px; max-height: 92vh; border-radius: 14px; padding: 36px; overflow-y: auto; }
+        .routine-modal-content { background: white; width: 1320px; max-height: 96vh; border-radius: 14px; padding: 24px 30px; overflow-y: auto; }
 
         .project-title { font-size: 20px; font-weight: 800; color: #1e293b; line-height: 1.3; }
         .tab-btn { transition: all 0.15s; }
@@ -89,10 +89,29 @@
             </div>
             <div id="reportTitleDisplay" class="text-sm font-semibold text-orange-200 tracking-tight hidden"></div>
         </div>
-        <div class="flex items-center space-x-2">
-            <button onclick="fetchFromSheets()" class="bg-[#384e46] hover:bg-[#2a3b35] border border-white/20 px-3 py-2 rounded text-xs font-bold shadow transition-all" title="구글시트에서 최신 데이터 가져오기">🔄 새로고침</button>
-            <button onclick="openRoutineModal()" class="bg-[#496259] hover:bg-[#384e46] border border-white/20 px-4 py-2 rounded text-xs font-bold shadow transition-all">📋 상시업무</button>
-            <button onclick="openUrlSetup()" class="bg-[#2a3b35] hover:bg-[#1e2d28] border border-white/20 px-3 py-2 rounded text-xs font-bold shadow transition-all">⚙️ 시트 연결</button>
+        <div class="flex items-center gap-3">
+            <!-- 시스템 버튼: 새로고침 + 시트연결 -->
+            <div class="flex items-center gap-0.5 bg-black/25 rounded-lg px-1.5 py-1 border border-white/10">
+                <button onclick="fetchFromSheets()" title="새로고침"
+                    class="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium opacity-75 hover:opacity-100 hover:bg-white/10 transition-all">
+                    <span>🔄</span><span>새로고침</span>
+                </button>
+                <div class="w-px h-4 bg-white/20 mx-0.5"></div>
+                <button onclick="openUrlSetup()" title="시트 연결"
+                    class="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium opacity-75 hover:opacity-100 hover:bg-white/10 transition-all">
+                    <span>⚙️</span><span>시트 연결</span>
+                </button>
+            </div>
+            <!-- 구분선 -->
+            <div class="h-7 w-px bg-white/20"></div>
+            <!-- 바로가기 아이콘들 + 상시업무 -->
+            <div class="flex items-center gap-2">
+                <div id="quickLinks" class="flex items-center gap-1.5"></div>
+                <button onclick="openRoutineModal()"
+                    class="flex items-center gap-1.5 bg-[#BD5429] hover:bg-orange-600 px-4 py-2 rounded-lg text-xs font-bold shadow-lg transition-all border border-orange-400/30">
+                    <span>📋</span><span>상시업무</span>
+                </button>
+            </div>
             <div id="currentDateDisplay" class="text-xs font-medium text-orange-200 border-l border-white/20 pl-3"></div>
         </div>
     </header>
@@ -170,34 +189,34 @@
         <div class="flex justify-between items-center mb-5 border-b pb-4">
             <div>
                 <h2 class="text-xl font-bold text-slate-800">상시업무 현황</h2>
-                <p class="text-[11px] text-slate-400 mt-0.5">재무/비용 · 바론 사업관리·ERP·법인 · 기타/기획</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">바론 사업관리·ERP·법인 · 재무/비용 · 기타/기획</p>
             </div>
             <button onclick="closeRoutineModal()" class="text-gray-400 hover:text-black text-4xl">&times;</button>
         </div>
         <div class="flex space-x-4 border-b mb-4 text-xs text-gray-400">
-            <button class="tab-btn active pb-2 px-1" onclick="switchTab('재무비용', this)">재무/비용</button>
-            <button class="tab-btn pb-2 px-1" onclick="switchTab('바론', this)">바론 사업관리·ERP·법인</button>
+            <button class="tab-btn active pb-2 px-1" onclick="switchTab('바론', this)">바론 사업관리·ERP·법인</button>
+            <button class="tab-btn pb-2 px-1" onclick="switchTab('재무비용', this)">재무/비용</button>
             <button class="tab-btn pb-2 px-1" onclick="switchTab('기타기획', this)">기타/기획</button>
         </div>
 
-        <div id="tab-재무비용" class="tab-panel">
+        <div id="tab-재무비용" class="tab-panel hidden">
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:275px">
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-xs font-bold text-slate-700">경영현황 보고자료</span>
                         <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 김윤재 · 매월</span>
                     </div>
                     <p class="text-[11px] text-slate-500 mb-2">월별 실적/자금흐름/재무현황 보고자료 작성</p>
-                    <div id="routine-경영현황" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-경영현황" class="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-2 whitespace-pre-wrap" style="min-height:175px"></div>
                     <div id="routine-att-경영현황" class="flex flex-wrap mt-2"></div>
                 </div>
-                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:275px">
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-xs font-bold text-slate-700">동종업계 실적보고</span>
                         <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 김윤재 · 매년 2분기</span>
                     </div>
                     <p class="text-[11px] text-slate-500 mb-2">동종업계(ENG/거더사) 실적 자료 작성</p>
-                    <div id="routine-동종업계" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-동종업계" class="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-2 whitespace-pre-wrap" style="min-height:175px"></div>
                     <div id="routine-att-동종업계" class="flex flex-wrap mt-2"></div>
                 </div>
             </div>
@@ -205,63 +224,63 @@
 
         <div id="tab-기타기획" class="tab-panel hidden">
             <div class="grid grid-cols-2 gap-4 mb-4">
-                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:275px">
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-xs font-bold text-slate-700">지식재산권 업무</span>
                         <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 이미영 · 상시</span>
                     </div>
                     <p class="text-[11px] text-slate-500 mb-2">특허/저작권/라이선스/정보보안 관련 제반 업무</p>
-                    <div id="routine-지재권" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-지재권" class="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-2 whitespace-pre-wrap" style="min-height:175px"></div>
                     <div id="routine-att-지재권" class="flex flex-wrap mt-2"></div>
                 </div>
-                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:275px">
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-xs font-bold text-slate-700">CCP 기획 및 작업</span>
                         <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 김윤재 · 상시</span>
                     </div>
                     <p class="text-[11px] text-slate-500 mb-2">프로세스화 및 현황판 대시보드/세부과업별 인트로</p>
-                    <div id="routine-CCP" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-CCP" class="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-2 whitespace-pre-wrap" style="min-height:175px"></div>
                     <div id="routine-att-CCP" class="flex flex-wrap mt-2"></div>
                 </div>
             </div>
-            <div class="bg-orange-50 rounded-lg border border-orange-200 p-4" style="min-height:290px">
+            <div class="bg-orange-50 rounded-lg border border-orange-200 p-4" style="min-height:245px">
                 <div class="flex justify-between items-start mb-1">
                     <span class="text-xs font-bold text-slate-700">상시기획/팀지원</span>
                     <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 팀 공통 · 상시</span>
                 </div>
                 <p class="text-[11px] text-slate-500 mb-2">상시 기획 및 타팀 기획 지원, 기획실 내 일반업무 전체</p>
-                <div id="routine-팀지원" class="text-sm text-slate-700 leading-relaxed bg-white border border-orange-100 rounded p-3 whitespace-pre-wrap" style="min-height:180px"></div>
+                <div id="routine-팀지원" class="text-xs text-slate-700 leading-relaxed bg-white border border-orange-100 rounded p-2 whitespace-pre-wrap" style="min-height:145px"></div>
                 <div id="routine-att-팀지원" class="flex flex-wrap mt-2"></div>
             </div>
         </div>
 
-        <div id="tab-바론" class="tab-panel hidden">
+        <div id="tab-바론" class="tab-panel">
             <div class="grid grid-cols-3 gap-4">
-                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:275px">
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-xs font-bold text-slate-700">바론 사업관리</span>
                         <span class="text-[10px] text-slate-400 shrink-0 ml-1">국혜림(임민경)</span>
                     </div>
                     <p class="text-[11px] text-slate-500 mb-2">바론컨설턴트 법인 계약/청구/수금</p>
-                    <div id="routine-바론사업" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-바론사업" class="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-2 whitespace-pre-wrap" style="min-height:175px"></div>
                     <div id="routine-att-바론사업" class="flex flex-wrap mt-2"></div>
                 </div>
-                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:275px">
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-xs font-bold text-slate-700">바론 ERP 개선</span>
                         <span class="text-[10px] text-slate-400 shrink-0 ml-1">국혜림(임민경)</span>
                     </div>
                     <p class="text-[11px] text-slate-500 mb-2">ERP 실무활용 및 기능개선</p>
-                    <div id="routine-ERP" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-ERP" class="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-2 whitespace-pre-wrap" style="min-height:175px"></div>
                     <div id="routine-att-ERP" class="flex flex-wrap mt-2"></div>
                 </div>
-                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:330px">
+                <div class="bg-slate-50 rounded-lg border border-slate-200 p-4" style="min-height:275px">
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-xs font-bold text-slate-700">법인관리</span>
                         <span class="text-[10px] text-slate-400 shrink-0 ml-1">국혜림(임민경)</span>
                     </div>
                     <p class="text-[11px] text-slate-500 mb-2">정보통신공사업, 측량업, 직접생산확인서, 기업부설연구소 외</p>
-                    <div id="routine-법인관리" class="text-sm text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-3 whitespace-pre-wrap" style="min-height:210px"></div>
+                    <div id="routine-법인관리" class="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 rounded p-2 whitespace-pre-wrap" style="min-height:175px"></div>
                     <div id="routine-att-법인관리" class="flex flex-wrap mt-2"></div>
                 </div>
             </div>
@@ -369,6 +388,7 @@ function render() {
     renderCeoMemos();
     renderRoutines();
     renderReportTitle();
+    renderQuickLinks();
 }
 
 function renderReportTitle() {
@@ -379,6 +399,39 @@ function renderReportTitle() {
         el.classList.remove('hidden');
     } else {
         el.classList.add('hidden');
+    }
+}
+
+// ── 헤더 바로가기 아이콘 렌더링 ──────────────────────────────
+// 구글시트 [상시업무] 탭에 아래 키-값으로 입력하세요:
+//   바로가기1_아이콘  |  🏛
+//   바로가기1_제목    |  나라장터
+//   바로가기1_URL     |  https://www.g2b.go.kr
+//   바로가기2_아이콘  |  📊
+//   바로가기2_제목    |  ERP
+//   바로가기2_URL     |  https://erp.company.com
+//   (바로가기1 ~ 바로가기5 까지 지원)
+function renderQuickLinks() {
+    const container = document.getElementById('quickLinks');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+        const icon  = (routineData['바로가기' + i + '_아이콘'] || '').trim();
+        const label = (routineData['바로가기' + i + '_제목']   || '').trim();
+        const url   = (routineData['바로가기' + i + '_URL']    || '').trim();
+        if (!label) continue;
+        const btn = document.createElement('button');
+        btn.className = 'flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 transition-all min-w-[48px]';
+        btn.title = label + (url ? ' → ' + url : '');
+        btn.innerHTML = '<span class="text-base leading-none">' + (icon || '🔗') + '</span>'
+                      + '<span class="text-[9px] font-semibold opacity-90 whitespace-nowrap leading-tight">' + label + '</span>';
+        if (url) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                window.open(url, '_blank', 'noopener,noreferrer');
+            });
+        }
+        container.appendChild(btn);
     }
 }
 
