@@ -8,8 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --burnt-orange: #BD5429; --slate-green: #496259; --bg-gray: #F3F4F6; }
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-gray); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; overflow-y: auto; margin: 0; font-size: 14px; }
-        .dashboard-container { width: 100%; min-height: 100vh; background: white; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-gray); display: flex; justify-content: center; align-items: flex-start; height: 100vh; overflow: hidden; margin: 0; font-size: 14px; }
+        .dashboard-container { width: 100%; height: 100vh; background: white; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
         .header-gradient { background: linear-gradient(90deg, var(--slate-green) 0%, #2D3E38 100%); position: sticky; top: 0; z-index: 50; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
@@ -44,6 +44,118 @@
         .right-panel { background: #FFFFFF; }
         .panel-title { font-size: 15px; font-weight: 800; letter-spacing: -0.3px; }
         .summary-bar { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+
+        /* ── KPI 요약바 ─────────────────────────────── */
+        .kpi-bar {
+            background: linear-gradient(90deg, #1e2e29 0%, #2a3d36 60%, #1a2820 100%);
+            border-bottom: 1px solid rgba(189,84,41,0.2);
+            padding: 0 16px;
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            flex-shrink: 0;
+            height: 64px;
+        }
+        .kpi-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 20px;
+            border-right: 1px solid rgba(255,255,255,0.08);
+            min-width: 130px;
+            position: relative;
+            transition: background 0.15s;
+        }
+        .kpi-card:hover { background: rgba(255,255,255,0.04); }
+        .kpi-card:first-child { padding-left: 4px; }
+        .kpi-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: rgba(255,255,255,0.45);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .kpi-value {
+            font-size: 22px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+        .kpi-delta {
+            font-size: 10px;
+            font-weight: 700;
+            margin-top: 1px;
+        }
+        .kpi-delta.pos { color: #34d399; }
+        .kpi-delta.neg { color: #f87171; }
+        .kpi-delta.warn { color: #fbbf24; }
+        .kpi-divider {
+            width: 1px;
+            background: rgba(255,255,255,0.06);
+            margin: 12px 0;
+        }
+        .kpi-progress-ring { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); opacity: 0.7; }
+
+        /* 과업 현황 미니 게이지 */
+        .kpi-task-pills {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-top: 3px;
+        }
+        .kpi-pill {
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 99px;
+        }
+        /* 리스크 강조 */
+        .kpi-risk-num {
+            color: #f87171;
+        }
+        .kpi-risk-num.ok { color: #34d399; }
+
+        /* 우측 이슈 알림 영역 */
+        .kpi-alerts {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            overflow: hidden;
+        }
+        .kpi-alert-chip {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 4px 10px;
+            white-space: nowrap;
+            font-size: 11px;
+            color: rgba(255,255,255,0.75);
+            font-weight: 600;
+        }
+        .kpi-alert-chip.danger { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.1); color: #fca5a5; }
+        .kpi-alert-chip.warn   { border-color: rgba(251,146,60,0.4); background: rgba(251,146,60,0.08); color: #fdba74; }
+        .kpi-alert-chip.ok     { border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.07); color: #6ee7b7; }
+        .kpi-alert-label { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.3); margin-right: 4px; }
+
+        /* D-day 타이머 박스 */
+        .kpi-dday-wrap {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 18px;
+            border-left: 1px solid rgba(255,255,255,0.08);
+            min-width: 120px;
+        }
+        .kpi-dday-date { font-size: 9px; color: rgba(255,255,255,0.35); font-weight: 600; letter-spacing: 0.05em; }
+        .kpi-dday-count { font-size: 20px; font-weight: 900; color: #fbbf24; letter-spacing: -0.5px; line-height: 1.1; }
+        .kpi-dday-label { font-size: 9px; color: rgba(255,255,255,0.4); font-weight: 700; }
         /* URL 설정 모달 */
         #urlSetupOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; justify-content: center; align-items: center; }
     </style>
@@ -123,51 +235,120 @@
         </div>
     </header>
 
-    <main class="flex-1 grid grid-cols-12" style="min-height:calc(100vh - 68px)">
+    <!-- ==================== KPI 요약바 ==================== -->
+    <div class="kpi-bar" id="kpiBar">
 
-        <!-- LEFT PANEL: 주요 공유사항 -->
-        <div class="col-span-3 left-panel flex flex-col p-5 gap-4 border-r-2 border-[#496259]/20">
-            <div class="flex items-center gap-2 pb-2 border-b-2 border-[#496259]">
-                <span class="text-lg font-black text-[#496259] tracking-tight">주요 공유사항</span>
-            </div>
-
-            <!-- 팀 공유사항 -->
-            <div class="bg-white rounded-xl p-4 border border-slate-200 flex flex-col shadow-sm flex-1" style="min-height:340px">
-                <div class="flex items-center gap-1.5 mb-3">
-                    <span class="w-1 h-5 rounded-full bg-[#496259] inline-block shrink-0"></span>
-                    <h3 class="panel-title text-slate-700">팀 공유사항</h3>
+        <!-- ① 과업 평균 진행률 -->
+        <div class="kpi-card" style="flex:1.2;min-width:220px">
+            <div class="kpi-label">TASK PROGRESS · 과업 평균 진행률</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
+                <div class="kpi-value" id="kpi-task-pct" style="min-width:52px">—</div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+                    <!-- 스택형 세그먼트 바 -->
+                    <div style="height:6px;border-radius:3px;overflow:hidden;display:flex;gap:1px" id="kpi-stack-bar">
+                        <div id="ksb-ok"   style="height:100%;background:#34d399;transition:width 0.8s ease;border-radius:3px 0 0 3px" title="정상"></div>
+                        <div id="ksb-late" style="height:100%;background:#f97316;transition:width 0.8s ease" title="지연"></div>
+                        <div id="ksb-hold" style="height:100%;background:#94a3b8;transition:width 0.8s ease" title="보류"></div>
+                        <div id="ksb-done" style="height:100%;background:#60a5fa;transition:width 0.8s ease;border-radius:0 3px 3px 0" title="완료"></div>
+                    </div>
+                    <div class="kpi-task-pills" id="kpi-task-pills" style="gap:4px"></div>
                 </div>
-                <div id="teamMemoList" class="flex-1 overflow-y-auto custom-scrollbar space-y-2"></div>
-            </div>
-
-            <!-- 지시사항, 협의사항 -->
-            <div class="bg-orange-50 rounded-xl p-4 border border-orange-200 flex flex-col" style="min-height:260px">
-                <div class="flex items-center gap-1.5 mb-3">
-                    <span class="w-1 h-5 rounded-full bg-[#BD5429] inline-block shrink-0"></span>
-                    <h3 class="panel-title text-[#BD5429]">지시사항, 협의사항</h3>
-                </div>
-                <div id="ceoMemoList" class="flex-1 overflow-y-auto custom-scrollbar space-y-2"></div>
             </div>
         </div>
 
-        <!-- RIGHT PANEL: 과업수행 현황 -->
-        <div class="col-span-9 right-panel flex flex-col p-5">
-            <!-- (1)-7 Summary Bar -->
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                    <span class="text-lg font-black text-slate-700 tracking-tight">과업수행 현황 및 계획</span>
+        <!-- 구분 -->
+        <div style="width:1px;background:rgba(255,255,255,0.07);margin:14px 0;flex-shrink:0"></div>
+
+        <!-- ② 지연 비율 -->
+        <div class="kpi-card" style="flex:1.6;min-width:280px">
+            <div class="kpi-label">DELAY RATIO · 지연 비율</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
+                <!-- 반원 게이지 -->
+                <div style="position:relative;width:52px;height:28px;flex-shrink:0">
+                    <svg width="52" height="28" viewBox="0 0 52 28">
+                        <path d="M4 26 A22 22 0 0 1 48 26" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="5" stroke-linecap="round"/>
+                        <path id="kpi-gauge-arc" d="M4 26 A22 22 0 0 1 48 26" fill="none" stroke="#34d399" stroke-width="5" stroke-linecap="round"
+                            stroke-dasharray="69.1" stroke-dashoffset="69.1" style="transition:stroke-dashoffset 0.8s ease,stroke 0.5s ease"/>
+                    </svg>
+                    <div id="kpi-gauge-pct" style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:11px;font-weight:900;color:#fff;line-height:1">0%</div>
                 </div>
-                <div class="flex items-center gap-3 bg-slate-100 rounded-xl px-4 py-2 text-xs">
-                    <span class="text-slate-500 font-bold">전체</span>
-                    <strong id="sum-total" class="text-slate-800 text-sm">0</strong>
-                    <span class="w-px h-4 bg-slate-300"></span>
-                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-slate-500">정상</span><strong id="sum-ok" class="text-emerald-700">0</strong></span>
-                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-400"></span><span class="text-slate-500">지연</span><strong id="sum-late" class="text-orange-600">0</strong></span>
-                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-400"></span><span class="text-slate-500">보류</span><strong id="sum-hold" class="text-yellow-700">0</strong></span>
-                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-400"></span><span class="text-slate-500">완료</span><strong id="sum-done" class="text-blue-700">0</strong></span>
+                <div style="flex-shrink:0">
+                    <div style="display:flex;align-items:baseline;gap:4px">
+                        <span class="kpi-value kpi-risk-num" id="kpi-delay-count" style="font-size:24px">—</span>
+                        <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700">건 지연</span>
+                    </div>
+                    <div id="kpi-delay-detail" style="font-size:9px;color:rgba(255,255,255,0.45);font-weight:700;margin-top:1px;white-space:nowrap">전체 과업 대비 —</div>
+                </div>
+                <!-- 지연 칩: 가로 배치 -->
+                <div id="kpi-delay-chips" style="display:flex;flex-direction:row;flex-wrap:nowrap;gap:4px;overflow:hidden;flex:1;align-items:center"></div>
+            </div>
+        </div>
+
+        <!-- 구분 -->
+        <div style="width:1px;background:rgba(255,255,255,0.07);margin:14px 0;flex-shrink:0"></div>
+
+        <!-- ③ 협업팀 커버리지 -->
+        <div class="kpi-card" style="flex:1.6;min-width:260px">
+            <div class="kpi-label">COLLAB COVERAGE · 협업팀 커버리지</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:3px">
+                <div style="display:flex;align-items:baseline;gap:4px;flex-shrink:0">
+                    <div class="kpi-value" id="kpi-collab-num" style="color:#93c5fd">—</div>
+                    <div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700">개 팀</div>
+                </div>
+                <div id="kpi-collab-tags" style="display:flex;gap:3px;flex-wrap:wrap;overflow:hidden;flex:1;max-height:40px"></div>
+            </div>
+        </div>
+
+        <!-- 구분 -->
+        <div style="width:1px;background:rgba(255,255,255,0.07);margin:14px 0;flex-shrink:0"></div>
+
+        <!-- D-day 카운터 -->
+        <div class="kpi-dday-wrap" id="kpiDday" style="flex-shrink:0">
+            <div class="kpi-dday-label">2Q 마감까지</div>
+            <div class="kpi-dday-count" id="kpi-dday-count">—</div>
+            <div class="kpi-dday-date" id="kpi-dday-date">2026.06.30</div>
+        </div>
+    </div>
+
+    <main class="flex-1 grid grid-cols-12" style="height:calc(100vh - 120px);overflow:hidden">
+
+        <!-- LEFT PANEL: 주요 공유사항 -->
+        <div class="col-span-3 left-panel flex flex-col border-r-2 border-[#496259]/20" style="padding:14px 12px 14px 14px;gap:8px;overflow:hidden">
+            <div class="flex items-center gap-2 pb-2 border-b-2 border-[#496259]" style="flex-shrink:0">
+                <span class="font-black text-[#496259] tracking-tight" style="font-size:13px">주요 공유사항</span>
+            </div>
+
+            <!-- 팀 공유사항 -->
+            <div class="bg-white rounded-xl border border-slate-200 flex flex-col shadow-sm" style="flex:1;min-height:0;padding:10px 12px">
+                <div class="flex items-center gap-1.5 mb-2" style="flex-shrink:0">
+                    <span class="w-1 h-4 rounded-full bg-[#496259] inline-block shrink-0"></span>
+                    <h3 class="text-slate-700 font-black" style="font-size:12px;letter-spacing:-0.3px">팀 공유사항</h3>
+                </div>
+                <div id="teamMemoList" class="overflow-y-auto custom-scrollbar space-y-1.5" style="flex:1;min-height:0"></div>
+            </div>
+
+            <!-- 지시사항, 협의사항 -->
+            <div class="bg-orange-50 rounded-xl border border-orange-200 flex flex-col" style="flex:1;min-height:0;padding:10px 12px">
+                <div class="flex items-center gap-1.5 mb-2" style="flex-shrink:0">
+                    <span class="w-1 h-4 rounded-full bg-[#BD5429] inline-block shrink-0"></span>
+                    <h3 class="text-[#BD5429] font-black" style="font-size:12px;letter-spacing:-0.3px">지시사항, 협의사항</h3>
+                </div>
+                <div id="ceoMemoList" class="overflow-y-auto custom-scrollbar space-y-1.5" style="flex:1;min-height:0"></div>
+            </div>
+        </div>
+ 
+        <!-- RIGHT PANEL: 과업수행 현황 -->
+        <div class="col-span-9 right-panel flex flex-col" style="padding:14px 16px;overflow:hidden">
+            <!-- Summary Bar -->
+            <div class="flex items-center justify-between" style="flex-shrink:0;margin-bottom:8px">
+                <div class="flex items-center gap-2">
+                    <span class="font-black text-slate-700 tracking-tight" style="font-size:14px">과업수행 현황 및 계획</span>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-100 rounded-xl px-3 py-1.5 text-xs">
+                  
                 </div>
             </div>
-            <div id="projectGrid" class="grid grid-cols-3 gap-4 pb-8 overflow-y-auto">
+            <div id="projectGrid" class="grid grid-cols-3 gap-3 overflow-y-auto custom-scrollbar" style="flex:1;min-height:0;align-content:stretch;grid-auto-rows:1fr">
             </div>
         </div>
     </main>
@@ -432,6 +613,14 @@ function loadFromLocalStorage() {
     routineData = JSON.parse(localStorage.getItem('routine_v11') || '{}');
     teamMemos   = JSON.parse(localStorage.getItem('team_m_v11') || '[]');
     ceoMemos    = JSON.parse(localStorage.getItem('ceo_m_v11')  || '[]');
+
+    // KPI 데모값 (구글시트 미연결 시 샘플 표시)
+    if (!routineData['KPI_매출']) {
+        routineData['KPI_매출']      = '128억';
+        routineData['KPI_매출증감']  = '+6.2% YoY';
+        routineData['KPI_점유율']    = '24.8%';
+        routineData['KPI_점유율증감']= '+1.4%p';
+    }
 }
 
 function useOfflineMode() {
@@ -458,13 +647,29 @@ function saveScriptUrl() {
 
 // ── 렌더링 ───────────────────────────────────────────────
 function render() {
+    renderKpiBar();
     renderProjects();
     renderTeamMemos();
     renderCeoMemos();
     renderRoutines();
     renderReportTitle();
     renderQuickLinks();
+    requestAnimationFrame(syncPanelHeights);
 }
+
+// 좌측 두 박스의 상단·하단을 우측 카드 그리드와 픽셀 단위로 맞춤
+function syncPanelHeights() {
+    const summaryBar = document.querySelector('.col-span-9 > div:first-child');
+    const leftTitle  = document.querySelector('.left-panel > div:first-child');
+    if (!summaryBar || !leftTitle) return;
+
+    // 우측 summary bar 높이 → 좌측 타이틀 영역 min-height 동기화
+    const sbH = summaryBar.getBoundingClientRect().height;
+    leftTitle.style.minHeight = sbH + 'px';
+}
+
+// 창 크기 바뀔 때도 재동기화
+window.addEventListener('resize', syncPanelHeights);
 
 function renderReportTitle() {
     const title = routineData['보고제목'] || '';
@@ -574,52 +779,51 @@ function renderProjects() {
         // 진행률 바 색상
         const barBg = progress >= 100 ? '#10b981' : isSevere ? '#ef4444' : isLate ? '#f97316' : '#496259';
 
-        // 이슈 줄별 (2-3)
-        const issueIcons = ['·','·','·','·','·','·'];
         let issueHtml = '';
         if (issue && issue.trim()) {
             const lines = issue.trim().split('\n').filter(l => l.trim());
-            issueHtml = `<div class="bg-red-50 rounded-lg px-2.5 py-2 border border-red-200">`
-            + `<div class="text-[10px] font-black text-red-600 mb-1.5">⚠️ 이슈사항</div>`
-            + `<ul class="space-y-1">`
-            + lines.slice(0,5).map(l =>
-                `<li class="flex items-start gap-1.5 text-xs text-red-700 leading-snug"><span class="shrink-0 mt-0.5 text-red-400">•</span><span>${l.trim()}</span></li>`
+            issueHtml = `<div class="bg-red-50 rounded px-2 py-1.5 border border-red-200">`
+            + `<div class="font-black text-red-600 mb-1" style="font-size:9px">⚠ 이슈사항</div>`
+            + `<ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px">`
+            + lines.slice(0,3).map(l =>
+                `<li style="display:flex;align-items:flex-start;gap:4px;font-size:11px;color:#b91c1c;line-height:1.3"><span style="flex-shrink:0;color:#fca5a5;margin-top:1px">•</span><span>${l.trim()}</span></li>`
             ).join('')
-            + (lines.length > 5 ? `<li class="text-[10px] text-red-400 pl-3">+ ${lines.length-5}건 더</li>` : '')
+            + (lines.length > 3 ? `<li style="font-size:9px;color:#ef4444;padding-left:10px">+ ${lines.length-3}건 더</li>` : '')
             + `</ul></div>`;
         }
 
-        // 카드 스타일 (2-4)
-        let cardCls = 'bg-white rounded-2xl border border-gray-200 p-4 flex flex-col gap-3 shadow-sm hover:shadow-lg transition-all cursor-pointer';
-        if (status === '보류')  cardCls = 'bg-slate-50 rounded-2xl border border-slate-200 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-all cursor-pointer opacity-75';
-        else if (isSevere)      cardCls = 'card-danger rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-lg transition-all cursor-pointer';
-        else if (isLate)        cardCls = 'card-warn rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-lg transition-all cursor-pointer';
+        // 카드 스타일 (2-4) — 컴팩트 버전
+        let cardCls = 'bg-white rounded-xl border border-gray-200 flex flex-col shadow-sm hover:shadow-md transition-all cursor-pointer';
+        if (status === '보류')  cardCls = 'bg-slate-50 rounded-xl border border-slate-200 flex flex-col shadow-sm transition-all cursor-pointer opacity-75';
+        else if (isSevere)      cardCls = 'card-danger rounded-xl flex flex-col shadow-sm hover:shadow-md transition-all cursor-pointer';
+        else if (isLate)        cardCls = 'card-warn rounded-xl flex flex-col shadow-sm hover:shadow-md transition-all cursor-pointer';
 
         const card = document.createElement('div');
         card.className = cardCls;
+        card.style.cssText = 'padding:10px 12px;gap:6px;height:100%;box-sizing:border-box;';
         card.onclick = () => openModal(idx);
 
         card.innerHTML = `
             <div class="flex justify-between items-start gap-2">
-                <p class="font-bold text-slate-800 text-base leading-snug flex-1">${title}</p>
-                <span class="badge-${imp} text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">${imp}</span>
+                <p class="font-bold text-slate-800 leading-snug flex-1" style="font-size:13px">${title}</p>
+                <span class="badge-${imp} text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0">${imp}</span>
             </div>
             <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="status-${status} text-[11px] font-bold px-2 py-0.5 rounded-full">${status}</span>
-                ${pm ? `<span class="text-xs font-semibold text-slate-600">PM: ${pm}</span>` : ''}
-                ${collab ? `<span class="text-xs text-slate-500 border-l border-slate-200 pl-1.5">🤝 ${collab}</span>` : ''}
+                <span class="status-${status} text-[10px] font-bold px-1.5 py-0.5 rounded-full">${status}</span>
+                ${pm ? `<span class="text-[11px] font-semibold text-slate-600">PM: ${pm}</span>` : ''}
+                ${collab ? `<span class="text-[11px] text-slate-500 border-l border-slate-200 pl-1.5 truncate" style="max-width:80px" title="${collab}">🤝 ${collab}</span>` : ''}
             </div>
             <div>
-                <div class="flex justify-between items-center text-xs mb-1.5">
-                    <span class="font-bold text-slate-700">${progress}%${planPct!==null?` <span class="font-normal text-slate-400">/ 계획 ${planPct}%</span>`:''}${isSevere?` <span class="text-red-600 font-black ml-1">⚠ ${lag}%p↓</span>`:''}</span>
-                    ${dday ? `<span class="font-bold text-xs ${dday.startsWith('D+')?'text-red-500':dday==='D-day'?'text-orange-500':'text-slate-500'}">${dday}</span>` : ''}
+                <div class="flex justify-between items-center mb-1" style="font-size:11px">
+                    <span class="font-bold text-slate-700">${progress}%${planPct!==null?` <span class="font-normal text-slate-400">/ 계획 ${planPct}%</span>`:''}${isSevere?` <span class="text-red-600 font-black">⚠ ${lag}%p↓</span>`:''}</span>
+                    ${dday ? `<span class="font-bold ${dday.startsWith('D+')?'text-red-500':dday==='D-day'?'text-orange-500':'text-slate-500'}">${dday}</span>` : ''}
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="h-2 rounded-full" style="width:${progress}%;background:${barBg}"></div>
+                <div class="w-full bg-gray-200 rounded-full" style="height:5px">
+                    <div class="rounded-full" style="height:5px;width:${progress}%;background:${barBg}"></div>
                 </div>
             </div>
             ${issueHtml}
-            <button class="w-full py-2 rounded-lg bg-[#496259] hover:bg-[#384e46] text-xs font-bold text-white border border-[#496259]/30 transition-all mt-auto">과업 상세보기 →</button>
+            <button class="w-full rounded-lg bg-[#496259] hover:bg-[#384e46] text-[11px] font-bold text-white transition-all mt-auto" style="padding:5px 0">상세보기 →</button>
         `;
         grid.appendChild(card);
     });
@@ -860,6 +1064,145 @@ function switchTab(name, btn) {
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
     document.getElementById(`tab-${name}`).classList.remove('hidden');
     btn.classList.add('active');
+}
+
+// ── KPI 요약바 렌더링 ───────────────────────────────────
+function renderKpiBar() {
+    // ─ D-day (2Q 마감: 6월 30일) ─
+    const qEnd = new Date(today.getFullYear(), 5, 30);
+    qEnd.setHours(23,59,59,0);
+    const dDiff = Math.ceil((qEnd - today) / 86400000);
+    const ddEl = document.getElementById('kpi-dday-count');
+    if (ddEl) ddEl.textContent = dDiff > 0 ? 'D-' + dDiff : dDiff === 0 ? 'D-day' : 'D+' + Math.abs(dDiff);
+    const ddDateEl = document.getElementById('kpi-dday-date');
+    if (ddDateEl) ddDateEl.textContent = today.getFullYear() + '.06.30 마감';
+
+    // ─ 과업 통계 계산 ─
+    let total = projects.length, ok = 0, late = 0, hold = 0, done = 0, totalPrg = 0;
+    let lateProjs = [];
+    const collabSet = new Set();
+
+    projects.forEach(p => {
+        const st  = p['상태'] || p['status'] || '진행';
+        const prg = parseInt(p['진행률'] || 0);
+        totalPrg += prg;
+
+        // 협업팀 수집
+        const collab = (p['협업팀'] || p['collab'] || '').trim();
+        if (collab) collab.split(/[,·\/]/).forEach(t => { const c = t.trim(); if (c) collabSet.add(c); });
+
+        if (st === '보류')               { hold++; return; }
+        if (st === '완료' || prg >= 100) { done++; return; }
+
+        const startD = fmtDate(p['착수일'] || '');
+        const planD  = fmtDate(p['계획종료일'] || '');
+        let planPct  = null;
+        if (startD && planD) {
+            const s = new Date(startD), e = new Date(planD), now = new Date();
+            if (!isNaN(s) && !isNaN(e) && e > s)
+                planPct = Math.min(100, Math.max(0, Math.round((now-s)/(e-s)*100)));
+        }
+        const lag = planPct !== null ? planPct - prg : 0;
+        if (lag >= 10) {
+            late++;
+            lateProjs.push({ name: p['업무명'] || p['title'] || '과업', lag });
+        } else ok++;
+    });
+
+    const avgPrg  = total > 0 ? Math.round(totalPrg / total) : 0;
+    const latePct = total > 0 ? Math.round(late / total * 100) : 0;
+    const collabs = [...collabSet];
+
+    // ── ① 과업 평균 진행률 ──
+    const el_tp = document.getElementById('kpi-task-pct');
+    if (el_tp) el_tp.textContent = total > 0 ? avgPrg + '%' : '—';
+
+    // 스택 바 (ok/late/hold/done 비율)
+    if (total > 0) {
+        const setW = (id, n) => { const el = document.getElementById(id); if (el) el.style.width = Math.round(n/total*100) + '%'; };
+        setW('ksb-ok',   ok);
+        setW('ksb-late', late);
+        setW('ksb-hold', hold);
+        setW('ksb-done', done);
+    }
+
+    const pillsEl = document.getElementById('kpi-task-pills');
+    if (pillsEl) {
+        pillsEl.innerHTML = total > 0
+            ? `<span class="kpi-pill" style="background:rgba(52,211,153,0.18);color:#6ee7b7">정상 ${ok}</span>`
+            + `<span class="kpi-pill" style="background:rgba(249,115,22,0.18);color:#fdba74">지연 ${late}</span>`
+            + `<span class="kpi-pill" style="background:rgba(148,163,184,0.18);color:#cbd5e1">보류 ${hold}</span>`
+            + `<span class="kpi-pill" style="background:rgba(96,165,250,0.18);color:#93c5fd">완료 ${done}</span>`
+            : '<span style="font-size:9px;color:rgba(255,255,255,0.3)">데이터 없음</span>';
+    }
+
+    // ── ② 지연 비율 ──
+    const delayCntEl = document.getElementById('kpi-delay-count');
+    if (delayCntEl) {
+        delayCntEl.textContent = late;
+        delayCntEl.style.color = late === 0 ? '#34d399' : late <= 2 ? '#fbbf24' : '#f87171';
+    }
+    const delayDetailEl = document.getElementById('kpi-delay-detail');
+    if (delayDetailEl) {
+        delayDetailEl.textContent = total > 0
+            ? (late === 0 ? '전체 과업 정상 진행 중' : `전체 ${total}건 중 ${latePct}% 지연`)
+            : '—';
+    }
+
+    // 반원 게이지 (지연 비율)
+    const gaugeArc = document.getElementById('kpi-gauge-arc');
+    const gaugePct = document.getElementById('kpi-gauge-pct');
+    if (gaugeArc) {
+        const arcLen = 69.1;
+        const offset = arcLen * (1 - latePct / 100);
+        gaugeArc.style.strokeDashoffset = offset;
+        gaugeArc.style.stroke = latePct === 0 ? '#34d399' : latePct <= 20 ? '#fbbf24' : '#f87171';
+    }
+    if (gaugePct) gaugePct.textContent = latePct + '%';
+
+    // 지연 과업 칩 (최대 2개)
+    const dchipsEl = document.getElementById('kpi-delay-chips');
+    if (dchipsEl) {
+        dchipsEl.innerHTML = '';
+        lateProjs.slice(0, 3).forEach(sp => {
+            const chip = document.createElement('div');
+            chip.style.cssText = 'background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;color:#fca5a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;flex-shrink:0';
+            chip.title = sp.name;
+            chip.textContent = `▼${sp.lag}%p · ${sp.name.length > 10 ? sp.name.slice(0,9)+'…' : sp.name}`;
+            dchipsEl.appendChild(chip);
+        });
+        if (lateProjs.length > 3) {
+            const more = document.createElement('div');
+            more.style.cssText = 'font-size:9px;color:rgba(255,255,255,0.3);font-weight:600;white-space:nowrap;flex-shrink:0';
+            more.textContent = `+${lateProjs.length - 3}건`;
+            dchipsEl.appendChild(more);
+        }
+    }
+
+    // ── ③ 협업팀 커버리지 ──
+    const collabNumEl = document.getElementById('kpi-collab-num');
+    if (collabNumEl) collabNumEl.textContent = collabs.length || '—';
+
+    const collabTagsEl = document.getElementById('kpi-collab-tags');
+    if (collabTagsEl) {
+        collabTagsEl.innerHTML = '';
+        collabs.slice(0, 6).forEach(name => {
+            const tag = document.createElement('span');
+            tag.style.cssText = 'background:rgba(147,197,253,0.12);border:1px solid rgba(147,197,253,0.2);border-radius:4px;padding:2px 5px;font-size:9px;font-weight:700;color:#93c5fd;white-space:nowrap';
+            tag.textContent = name.length > 6 ? name.slice(0,5)+'…' : name;
+            tag.title = name;
+            collabTagsEl.appendChild(tag);
+        });
+        if (collabs.length > 6) {
+            const more = document.createElement('span');
+            more.style.cssText = 'font-size:9px;color:rgba(255,255,255,0.3);font-weight:600;padding:2px';
+            more.textContent = `+${collabs.length - 6}`;
+            collabTagsEl.appendChild(more);
+        }
+        if (collabs.length === 0) {
+            collabTagsEl.innerHTML = '<span style="font-size:9px;color:rgba(255,255,255,0.3)">협업팀 정보 없음</span>';
+        }
+    }
 }
 
 // ── 유틸 ─────────────────────────────────────────────────
