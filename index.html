@@ -158,6 +158,47 @@
         .kpi-dday-label { font-size: 9px; color: rgba(255,255,255,0.4); font-weight: 700; }
         /* URL 설정 모달 */
         #urlSetupOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; justify-content: center; align-items: center; }
+
+        /* ── 확장 모드 (Dual Monitor Support) ───────────────────── */
+        #dualOuterWrap { display: contents; }
+
+        body.dual-mode { justify-content: flex-start; }
+        body.dual-mode #dualOuterWrap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        body.dual-mode .dashboard-container {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #expandedPanel {
+            display: none;
+            background: #eef2f7;
+            height: 100vh;
+            overflow-y: auto;
+            border-left: 3px solid #496259;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        body.dual-mode #expandedPanel { display: flex; flex-direction: column; }
+
+        #dualModeBtn { transition: background 0.2s, border-color 0.2s; }
+        #dualModeBtn.active { background: rgba(189,84,41,0.75) !important; border-color: rgba(189,84,41,0.5) !important; }
+
+        .exp-label {
+            font-size: 10px; font-weight: 700; color: #94a3b8;
+            margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0;
+        }
+        .exp-textbox {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 14px 16px; font-size: 13px; line-height: 1.8; color: #334155;
+            white-space: pre-wrap; overflow-y: auto; flex: 1; min-height: 0;
+        }
     </style>
 </head>
 <body>
@@ -198,6 +239,7 @@
 </div>
 
 <!-- ==================== 메인 대시보드 ==================== -->
+<div id="dualOuterWrap">
 <div class="dashboard-container">
     <header class="header-gradient text-white px-5 py-3 flex justify-between items-center">
         <div class="flex flex-col gap-0.5">
@@ -231,6 +273,20 @@
                     <span>📋</span><span>상시업무</span>
                 </button>
             </div>
+            <!-- 확장 모드 버튼 -->
+            <button id="dualModeBtn" onclick="toggleDualMode()" title="확장 모드 (32:9 Dual Monitor)"
+                class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-white/20 text-xs font-bold"
+                style="background:rgba(73,98,89,0.65)">
+                <svg width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="0.7" y="0.7" width="8.6" height="8.6" rx="1.3"/>
+                    <line x1="3.2" y1="9.3" x2="3.2" y2="11.5"/><line x1="5.8" y1="9.3" x2="5.8" y2="11.5"/>
+                    <line x1="2" y1="11.5" x2="7" y2="11.5"/>
+                    <rect x="12.7" y="0.7" width="8.6" height="8.6" rx="1.3"/>
+                    <line x1="15.2" y1="9.3" x2="15.2" y2="11.5"/><line x1="17.8" y1="9.3" x2="17.8" y2="11.5"/>
+                    <line x1="14" y1="11.5" x2="19" y2="11.5"/>
+                </svg>
+                <span id="dualModeBtnText">확장 모드</span>
+            </button>
             <div id="currentDateDisplay" class="text-xs font-medium text-orange-200 border-l border-white/20 pl-3"></div>
         </div>
     </header>
@@ -336,7 +392,7 @@
                 <div id="ceoMemoList" class="overflow-y-auto custom-scrollbar space-y-1.5" style="flex:1;min-height:0"></div>
             </div>
         </div>
- 
+
         <!-- RIGHT PANEL: 과업수행 현황 -->
         <div class="col-span-9 right-panel flex flex-col" style="padding:14px 16px;overflow:hidden">
             <!-- Summary Bar -->
@@ -345,14 +401,30 @@
                     <span class="font-black text-slate-700 tracking-tight" style="font-size:14px">과업수행 현황 및 계획</span>
                 </div>
                 <div class="flex items-center gap-3 bg-slate-100 rounded-xl px-3 py-1.5 text-xs">
-                  
+                    <span class="text-slate-500 font-bold">전체</span>
+                    <strong id="sum-total" class="text-slate-800 text-sm">0</strong>
+                    <span class="w-px h-4 bg-slate-300"></span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-slate-500">정상</span><strong id="sum-ok" class="text-emerald-700">0</strong></span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-400"></span><span class="text-slate-500">지연</span><strong id="sum-late" class="text-orange-600">0</strong></span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-400"></span><span class="text-slate-500">보류</span><strong id="sum-hold" class="text-yellow-700">0</strong></span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-400"></span><span class="text-slate-500">완료</span><strong id="sum-done" class="text-blue-700">0</strong></span>
                 </div>
             </div>
             <div id="projectGrid" class="grid grid-cols-3 gap-3 overflow-y-auto custom-scrollbar" style="flex:1;min-height:0;align-content:stretch;grid-auto-rows:1fr">
             </div>
         </div>
     </main>
+</div><!-- /.dashboard-container -->
+
+<!-- ── 확장 패널 (Dual Monitor 오른쪽 화면) ── -->
+<div id="expandedPanel" class="custom-scrollbar">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#94a3b8;padding:32px;text-align:center">
+        <div style="font-size:52px;margin-bottom:16px;opacity:0.4">🖥️</div>
+        <p style="font-size:14px;font-weight:700;color:#64748b;margin-bottom:6px">프로젝트 카드를 클릭하세요</p>
+        <p style="font-size:12px">선택한 과업의 상세 내용이 이 영역에 표시됩니다</p>
+    </div>
 </div>
+</div><!-- /#dualOuterWrap -->
 
 <!-- ==================== MODAL: 과업 상세보기 ==================== -->
 <div id="modalOverlay">
@@ -801,7 +873,7 @@ function renderProjects() {
         const card = document.createElement('div');
         card.className = cardCls;
         card.style.cssText = 'padding:10px 12px;gap:6px;height:100%;box-sizing:border-box;';
-        card.onclick = () => openModal(idx);
+        card.onclick = () => isDualMode ? renderExpandedDetail(idx) : openModal(idx);
 
         card.innerHTML = `
             <div class="flex justify-between items-start gap-2">
@@ -1212,6 +1284,198 @@ function showLoading(msg) {
 }
 function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
 function setStatus(msg) { document.getElementById('syncStatus').textContent = msg; }
+
+// ── 확장 모드 (Dual Monitor Support) ─────────────────────────────
+let isDualMode = false;
+
+function toggleDualMode() {
+    isDualMode = !isDualMode;
+    document.body.classList.toggle('dual-mode', isDualMode);
+    const btn     = document.getElementById('dualModeBtn');
+    const btnText = document.getElementById('dualModeBtnText');
+    if (isDualMode) {
+        btn.classList.add('active');
+        btnText.textContent = '일반 모드';
+        showExpandedPlaceholder();
+    } else {
+        btn.classList.remove('active');
+        btnText.textContent = '확장 모드';
+        showExpandedPlaceholder();
+    }
+}
+
+function showExpandedPlaceholder() {
+    const panel = document.getElementById('expandedPanel');
+    if (!panel) return;
+    panel.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#94a3b8;padding:32px;text-align:center">
+        <div style="font-size:52px;margin-bottom:16px;opacity:0.4">🖥️</div>
+        <p style="font-size:14px;font-weight:700;color:#64748b;margin-bottom:6px">프로젝트 카드를 클릭하세요</p>
+        <p style="font-size:12px">선택한 과업의 상세 내용이 이 영역에 표시됩니다</p>
+    </div>`;
+}
+
+function renderExpandedDetail(idx) {
+    const p     = projects[idx];
+    const panel = document.getElementById('expandedPanel');
+    if (!panel) return;
+
+    const pm       = p['PM'] || p['pmText'] || '';
+    const assignee = p['담당자'] || '';
+    const collab   = p['협업팀'] || p['collab'] || '';
+    const startD   = fmtDate(p['착수일'] || p['startDate'] || '');
+    const planD    = fmtDate(p['계획종료일'] || p['planDate'] || '');
+    const title    = p['업무명'] || p['title'] || '(제목 없음)';
+    const goals    = p['과업내용'] || p['goals'] || '';
+    const issue    = p['이슈사항'] || p['issue'] || '';
+    const seminars = p['회의이력'] || p['seminars'] || '';
+    const status   = p['상태'] || p['status'] || '진행';
+    const imp      = p['우선순위'] || p['importance'] || '중';
+    const progress = parseInt(p['진행률'] || 0);
+
+    // 기간 계산
+    let durHtml = '';
+    if (startD && planD) {
+        const _s = new Date(startD), _e = new Date(planD), _n = new Date();
+        _s.setHours(0,0,0,0); _e.setHours(0,0,0,0); _n.setHours(0,0,0,0);
+        const totalD   = Math.round((_e - _s) / 86400000);
+        const elapsedD = Math.max(0, Math.min(totalD, Math.round((_n - _s) / 86400000)));
+        const remainD  = Math.max(0, Math.round((_e - _n) / 86400000));
+        durHtml = `<div style="background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.18);border-radius:8px;padding:5px 12px;display:flex;align-items:center;gap:8px">
+            <span style="font-size:9px;font-weight:700;opacity:0.5;text-transform:uppercase;letter-spacing:0.05em">기간</span>
+            <span style="font-size:13px;font-weight:900;color:#fff">총 ${totalD}일</span>
+            <span style="opacity:0.3">|</span>
+            <span style="font-size:11px;font-weight:700;color:#7dd3fc">진행 ${elapsedD}일</span>
+            <span style="opacity:0.3">/</span>
+            <span style="font-size:11px;font-weight:700;color:#fde68a">잔여 ${remainD}일</span>
+        </div>`;
+    }
+
+    const barBg = progress >= 100 ? '#10b981' : status === '보류' ? '#94a3b8' : '#496259';
+
+    // 이슈 HTML (issue 내용을 textContent로 안전하게 처리 후 삽입)
+    const issueEscaped = issue
+        ? issue.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        : '';
+    const goalsEscaped = goals
+        ? goals.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        : '';
+    const seminarsEscaped = seminars
+        ? seminars.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        : '';
+
+    const rawAtt = (p['붙임파일'] || p['attachments'] || '').trim();
+
+    panel.innerHTML = `
+    <div style="padding:22px;display:flex;flex-direction:column;gap:18px;min-height:100%;box-sizing:border-box">
+
+        <!-- ① 헤더 그라디언트 배너 -->
+        <div style="background:linear-gradient(135deg,#496259 0%,#2D3E38 100%);border-radius:12px;padding:20px 22px;color:white;flex-shrink:0">
+            <h2 style="font-size:19px;font-weight:900;line-height:1.35;margin-bottom:12px;letter-spacing:-0.3px">${title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</h2>
+            <!-- 인적 정보 -->
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px;font-size:12px">
+                <div style="background:rgba(255,255,255,0.14);border-radius:8px;padding:4px 11px;display:flex;gap:5px;align-items:center">
+                    <span style="opacity:0.55">PM</span><strong>${pm || '-'}</strong>
+                </div>
+                <div style="background:rgba(255,255,255,0.14);border-radius:8px;padding:4px 11px;display:flex;gap:5px;align-items:center">
+                    <span style="opacity:0.55">담당자</span><strong>${assignee || '-'}</strong>
+                </div>
+                <div style="background:rgba(255,255,255,0.14);border-radius:8px;padding:4px 11px;display:flex;gap:5px;align-items:center">
+                    <span style="opacity:0.55">협업팀</span><strong>${collab || '-'}</strong>
+                </div>
+                <span class="badge-${imp}" style="border-radius:999px;padding:3px 9px;font-size:10px;font-weight:700;align-self:center">${imp}</span>
+                <span class="status-${status}" style="border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;align-self:center">${status}</span>
+            </div>
+            <!-- 일정 정보 -->
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px;font-size:12px">
+                <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.18);border-radius:8px;padding:4px 12px;display:flex;gap:7px;align-items:center">
+                    <span style="font-size:9px;font-weight:700;opacity:0.5;text-transform:uppercase;letter-spacing:0.05em">착수</span>
+                    <span style="font-weight:900;font-size:13px;color:#6ee7b7">${startD || '-'}</span>
+                </div>
+                <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.18);border-radius:8px;padding:4px 12px;display:flex;gap:7px;align-items:center">
+                    <span style="font-size:9px;font-weight:700;opacity:0.5;text-transform:uppercase;letter-spacing:0.05em">완료예정</span>
+                    <span style="font-weight:900;font-size:13px;color:#fdba74">${planD || '-'}</span>
+                </div>
+                ${durHtml}
+            </div>
+            <!-- 진행률 바 -->
+            <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+                    <span style="font-size:11px;font-weight:700;opacity:0.65">진행률</span>
+                    <span style="font-size:20px;font-weight:900">${progress}%</span>
+                </div>
+                <div style="height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,0.15)">
+                    <div style="height:100%;width:${progress}%;background:${barBg};border-radius:4px;transition:width 0.9s ease"></div>
+                </div>
+            </div>
+            <!-- 주요 URL 버튼 영역 -->
+            <div id="exp-urlLinks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px"></div>
+        </div>
+
+        <!-- ② 본문 2컬럼 그리드 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0">
+            <!-- 왼쪽: 과업내용 + 이슈 -->
+            <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
+                <div style="display:flex;flex-direction:column;flex:1;min-height:0">
+                    <div class="exp-label">과업 목표 및 내용</div>
+                    <div class="exp-textbox" style="min-height:120px">${goalsEscaped || '(내용 없음)'}</div>
+                </div>
+                ${issueEscaped ? `<div style="display:flex;flex-direction:column;flex-shrink:0">
+                    <div class="exp-label" style="color:#ef4444">⚠ 이슈사항</div>
+                    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.8;color:#b91c1c;white-space:pre-wrap">${issueEscaped}</div>
+                </div>` : ''}
+            </div>
+            <!-- 오른쪽: 회의 이력 -->
+            <div style="display:flex;flex-direction:column;min-height:0">
+                <div class="exp-label">세미나 및 회의 이력</div>
+                <div class="exp-textbox" style="min-height:200px;overflow-y:auto">${seminarsEscaped || '(내용 없음)'}</div>
+            </div>
+        </div>
+
+        <!-- ③ 붙임파일 -->
+        ${rawAtt ? `<div id="exp-attachments" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #dde3eb;flex-shrink:0">
+            <span style="font-size:11px;font-weight:700;color:#94a3b8">📎 붙임파일:</span>
+        </div>` : ''}
+
+    </div>`;
+
+    // 주요 URL 버튼 (DOM으로 안전하게 생성)
+    const urlBox = panel.querySelector('#exp-urlLinks');
+    if (urlBox) {
+        const rawUrls = (p['주요URL'] || p['주요 URL'] || '').trim();
+        if (rawUrls) {
+            rawUrls.split('\n').forEach(line => {
+                line = line.trim(); if (!line) return;
+                const parts = line.split('|');
+                const name = parts[0].trim();
+                const url  = (parts[1] || '').trim();
+                const finalUrl = url || (name.startsWith('http') ? name : '');
+                const btn = document.createElement('button');
+                btn.textContent = '🔗 ' + name;
+                btn.className = 'text-xs font-bold bg-amber-400 hover:bg-amber-300 text-amber-900 px-3 py-1.5 rounded-lg border border-amber-300 transition-all shadow-sm';
+                if (finalUrl) btn.addEventListener('click', e => { e.stopPropagation(); window.open(finalUrl, '_blank', 'noopener,noreferrer'); });
+                urlBox.appendChild(btn);
+            });
+        }
+    }
+
+    // 붙임파일 버튼 (DOM으로 안전하게 생성)
+    const attBox = panel.querySelector('#exp-attachments');
+    if (attBox && rawAtt) {
+        rawAtt.split('\n').forEach(line => {
+            line = line.trim(); if (!line) return;
+            const parts = line.split('|');
+            const name = parts[0].trim();
+            const url  = (parts[1] || '').trim();
+            const finalUrl = url || (name.startsWith('http') ? name : '');
+            const btn = document.createElement('button');
+            btn.textContent = '📄 ' + name;
+            btn.className = 'text-xs font-semibold text-[#496259] bg-slate-100 hover:bg-[#496259] hover:text-white px-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer';
+            if (finalUrl) btn.addEventListener('click', e => { e.stopPropagation(); window.open(finalUrl, '_blank', 'noopener,noreferrer'); });
+            else { btn.style.opacity = '0.5'; btn.style.cursor = 'default'; }
+            attBox.appendChild(btn);
+        });
+    }
+}
 </script>
 </body>
 </html>
