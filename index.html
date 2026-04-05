@@ -6,200 +6,7 @@
     <title>2026 2Q 경영기획팀 전략 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --burnt-orange: #BD5429; --slate-green: #496259; --bg-gray: #F3F4F6; }
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-gray); display: flex; justify-content: center; align-items: flex-start; height: 100vh; overflow: hidden; margin: 0; font-size: 14px; }
-        .dashboard-container { width: 100%; height: 100vh; background: white; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
-        .header-gradient { background: linear-gradient(90deg, var(--slate-green) 0%, #2D3E38 100%); position: sticky; top: 0; z-index: 50; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-
-        .badge-상 { background-color: #ef4444; color: white; }
-        .badge-중 { background-color: #f97316; color: white; }
-        .badge-하 { background-color: #3b82f6; color: white; }
-
-        .status-진행 { background-color: #DBEAFE; color: #1E40AF; }
-        .status-완료 { background-color: #D1FAE5; color: #065F46; }
-        .status-보류 { background-color: #FEF3C7; color: #92400E; }
-
-        #modalOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 1100px; max-height: 85vh; border-radius: 12px; padding: 35px; overflow-y: auto; }
-
-        #routineModalOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
-        .routine-modal-content { background: white; width: 1320px; max-height: 96vh; border-radius: 14px; padding: 24px 30px; overflow-y: auto; }
-
-        .project-title { font-size: 20px; font-weight: 800; color: #1e293b; line-height: 1.3; }
-        .tab-btn { transition: all 0.15s; }
-        .tab-btn.active { border-bottom: 2px solid #BD5429; color: #BD5429; font-weight: 700; }
-
-        /* 로딩 오버레이 */
-        #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.92); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; }
-        .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #496259; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-
-        .card-warn   { border: 2px solid #f97316 !important; background: #fff7ed !important; }
-        .card-danger { border: 2px solid #ef4444 !important; background: #fff5f5 !important; }
-        .left-panel  { background: #F0F4F8; }
-        .right-panel { background: #FFFFFF; }
-        .panel-title { font-size: 15px; font-weight: 800; letter-spacing: -0.3px; }
-        .summary-bar { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
-
-        /* ── KPI 요약바 ─────────────────────────────── */
-        .kpi-bar {
-            background: linear-gradient(90deg, #1e2e29 0%, #2a3d36 60%, #1a2820 100%);
-            border-bottom: 1px solid rgba(189,84,41,0.2);
-            padding: 0 16px;
-            display: flex;
-            align-items: stretch;
-            gap: 0;
-            flex-shrink: 0;
-            height: 64px;
-        }
-        .kpi-card {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 0 20px;
-            border-right: 1px solid rgba(255,255,255,0.08);
-            min-width: 130px;
-            position: relative;
-            transition: background 0.15s;
-        }
-        .kpi-card:hover { background: rgba(255,255,255,0.04); }
-        .kpi-card:first-child { padding-left: 4px; }
-        .kpi-label {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            color: rgba(255,255,255,0.45);
-            text-transform: uppercase;
-            margin-bottom: 2px;
-        }
-        .kpi-value {
-            font-size: 22px;
-            font-weight: 900;
-            color: #ffffff;
-            letter-spacing: -0.5px;
-            line-height: 1.1;
-        }
-        .kpi-delta {
-            font-size: 10px;
-            font-weight: 700;
-            margin-top: 1px;
-        }
-        .kpi-delta.pos { color: #34d399; }
-        .kpi-delta.neg { color: #f87171; }
-        .kpi-delta.warn { color: #fbbf24; }
-        .kpi-divider {
-            width: 1px;
-            background: rgba(255,255,255,0.06);
-            margin: 12px 0;
-        }
-        .kpi-progress-ring { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); opacity: 0.7; }
-
-        /* 과업 현황 미니 게이지 */
-        .kpi-task-pills {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            margin-top: 3px;
-        }
-        .kpi-pill {
-            font-size: 9px;
-            font-weight: 800;
-            padding: 1px 6px;
-            border-radius: 99px;
-        }
-        /* 리스크 강조 */
-        .kpi-risk-num {
-            color: #f87171;
-        }
-        .kpi-risk-num.ok { color: #34d399; }
-
-        /* 우측 이슈 알림 영역 */
-        .kpi-alerts {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 0 16px;
-            overflow: hidden;
-        }
-        .kpi-alert-chip {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 4px 10px;
-            white-space: nowrap;
-            font-size: 11px;
-            color: rgba(255,255,255,0.75);
-            font-weight: 600;
-        }
-        .kpi-alert-chip.danger { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.1); color: #fca5a5; }
-        .kpi-alert-chip.warn   { border-color: rgba(251,146,60,0.4); background: rgba(251,146,60,0.08); color: #fdba74; }
-        .kpi-alert-chip.ok     { border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.07); color: #6ee7b7; }
-        .kpi-alert-label { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.3); margin-right: 4px; }
-
-        /* D-day 타이머 박스 */
-        .kpi-dday-wrap {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 0 18px;
-            border-left: 1px solid rgba(255,255,255,0.08);
-            min-width: 120px;
-        }
-        .kpi-dday-date { font-size: 9px; color: rgba(255,255,255,0.35); font-weight: 600; letter-spacing: 0.05em; }
-        .kpi-dday-count { font-size: 20px; font-weight: 900; color: #fbbf24; letter-spacing: -0.5px; line-height: 1.1; }
-        .kpi-dday-label { font-size: 9px; color: rgba(255,255,255,0.4); font-weight: 700; }
-        /* URL 설정 모달 */
-        #urlSetupOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; justify-content: center; align-items: center; }
-
-        /* ── 확장 모드 (Dual Monitor Support) ───────────────────── */
-        #dualOuterWrap { display: contents; }
-
-        body.dual-mode { justify-content: flex-start; }
-        body.dual-mode #dualOuterWrap {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-        body.dual-mode .dashboard-container {
-            width: 100%;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        #expandedPanel {
-            display: none;
-            background: #eef2f7;
-            height: 100vh;
-            overflow-y: auto;
-            border-left: 3px solid #496259;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-        body.dual-mode #expandedPanel { display: flex; flex-direction: column; }
-
-        #dualModeBtn { transition: background 0.2s, border-color 0.2s; }
-        #dualModeBtn.active { background: rgba(189,84,41,0.75) !important; border-color: rgba(189,84,41,0.5) !important; }
-
-        .exp-label {
-            font-size: 10px; font-weight: 700; color: #94a3b8;
-            margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0;
-        }
-        .exp-textbox {
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-            padding: 14px 16px; font-size: 13px; line-height: 1.8; color: #334155;
-            white-space: pre-wrap; overflow-y: auto; flex: 1; min-height: 0;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
@@ -211,7 +18,8 @@
 
 <!-- ==================== URL 설정 모달 ==================== -->
 <div id="urlSetupOverlay">
-    <div style="background:white; width:560px; border-radius:16px; padding:36px;">
+    <div style="background:white; width:560px; border-radius:16px; padding:36px; position:relative;">
+        <button onclick="closeUrlSetup()" style="position:absolute;top:14px;right:18px;font-size:24px;color:#94a3b8;background:none;border:none;cursor:pointer;line-height:1;transition:color 0.15s;" onmouseover="this.style.color='#1e293b'" onmouseout="this.style.color='#94a3b8'" title="취소">×</button>
         <h2 class="text-xl font-bold text-slate-800 mb-2">⚙️ 초기 설정</h2>
         <p class="text-sm text-slate-500 mb-5 leading-relaxed">
             구글시트와 연동하려면 <strong>Apps Script 웹앱 URL</strong>이 필요합니다.<br>
@@ -229,50 +37,41 @@
         </div>
         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-tight">Apps Script 웹앱 URL</label>
         <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/..." 
-            class="w-full border rounded-lg px-3 py-2.5 text-sm mb-4 focus:ring-2 focus:ring-[#496259] focus:outline-none">
+            class="w-full border rounded-lg px-3 py-2.5 text-sm mb-4 focus:ring-2 focus:ring-[#1E3A8A] focus:outline-none">
         <div class="flex gap-3">
-            <button onclick="saveScriptUrl()" class="flex-1 py-2.5 bg-[#496259] hover:bg-[#384e46] text-white text-sm font-bold rounded-lg transition-all">연결하기</button>
+            <button onclick="saveScriptUrl()" class="flex-1 py-2.5 bg-[#1E3A8A] hover:bg-[#1E40AF] text-white text-sm font-bold rounded-lg transition-all">연결하기</button>
             <button onclick="useOfflineMode()" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition-all">오프라인 모드로 시작</button>
+            <button onclick="closeUrlSetup()" class="py-2.5 px-5 bg-white hover:bg-gray-50 text-gray-400 text-sm font-medium rounded-lg transition-all border border-gray-200">취소</button>
         </div>
         <p class="text-[10px] text-slate-400 mt-3 text-center">오프라인 모드: 로컬 저장(localStorage)만 사용합니다</p>
     </div>
 </div>
 
-<!-- ==================== 메인 대시보드 ==================== -->
-<div id="dualOuterWrap">
 <div class="dashboard-container">
-    <header class="header-gradient text-white px-5 py-3 flex justify-between items-center">
-        <div class="flex flex-col gap-0.5">
-            <div class="flex items-center gap-3">
-                <h1 class="font-black tracking-tight leading-tight" style="font-size:16px">한맥가족 총괄기획실<br><span style="font-size:20px">경영기획팀 업무 현황 대시보드</span></h1>
-                <span class="text-sm font-normal opacity-50">2026 2Q Portal</span>
-                <div id="syncStatus" class="text-[10px] opacity-60"></div>
+    <!-- ==================== 오프라인 배너 ==================== -->
+    <div id="offlineBanner">
+        <span class="banner-msg">⚠️ 오프라인 모드 — 구글시트에 연결되지 않았습니다. 표시 중인 데이터가 최신이 아닐 수 있습니다.</span>
+        <button class="banner-close" onclick="document.getElementById('offlineBanner').style.display='none'" title="닫기">×</button>
+    </div>
+
+    <header class="header-gradient text-white px-5 py-3 flex justify-between items-center z-50 relative shadow-sm">
+        <div class="flex items-center gap-4">
+            <div>
+                <h1 class="font-black tracking-tight leading-tight" style="font-size:16px">한맥가족 총괄기획실<br><span style="font-size:20px">경영기획팀 업무 현황</span></h1>
             </div>
-            <div id="reportTitleDisplay" class="text-sm font-semibold text-orange-200 tracking-tight hidden"></div>
+            <div id="reportTitleDisplay" class="text-sm font-semibold text-rose-200 tracking-tight hidden" style="align-self:flex-end;padding-bottom:2px"></div>
         </div>
         <div class="flex items-center gap-3">
-            <!-- 시스템 버튼: 새로고침 + 시트연결 -->
-            <div class="flex items-center gap-0.5 bg-black/25 rounded-lg px-1.5 py-1 border border-white/10">
-                <button onclick="fetchFromSheets()" title="새로고침"
-                    class="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium opacity-75 hover:opacity-100 hover:bg-white/10 transition-all">
-                    <span>🔄</span><span>새로고침</span>
-                </button>
-                <div class="w-px h-4 bg-white/20 mx-0.5"></div>
-                <button onclick="openUrlSetup()" title="시트 연결"
-                    class="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium opacity-75 hover:opacity-100 hover:bg-white/10 transition-all">
-                    <span>⚙️</span><span>시트 연결</span>
-                </button>
-            </div>
-            <!-- 구분선 -->
-            <div class="h-7 w-px bg-white/20"></div>
             <!-- 바로가기 아이콘들 + 상시업무 -->
             <div class="flex items-center gap-2">
                 <div id="quickLinks" class="flex items-center gap-1.5"></div>
                 <button onclick="openRoutineModal()"
-                    class="flex items-center gap-1.5 bg-[#BD5429] hover:bg-orange-600 px-4 py-2 rounded-lg text-xs font-bold shadow-lg transition-all border border-orange-400/30">
+                    class="flex items-center gap-1.5 bg-[#E11D48] hover:bg-rose-600 px-4 py-2 rounded-lg text-xs font-bold shadow-lg transition-all border border-rose-400/30">
                     <span>📋</span><span>상시업무</span>
                 </button>
             </div>
+            <!-- 구분선 -->
+            <div class="h-7 w-px bg-white/20"></div>
             <!-- 확장 모드 버튼 -->
             <button id="dualModeBtn" onclick="toggleDualMode()" title="확장 모드 (32:9 Dual Monitor)"
                 class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-white/20 text-xs font-bold"
@@ -287,150 +86,127 @@
                 </svg>
                 <span id="dualModeBtnText">확장 모드</span>
             </button>
-            <div id="currentDateDisplay" class="text-xs font-medium text-orange-200 border-l border-white/20 pl-3"></div>
+            <!-- 시스템 버튼: 새로고침 + 시트연결 -->
+            <div class="flex items-center gap-0.5 bg-black/25 rounded-lg px-1.5 py-1 border border-white/10">
+                <button onclick="fetchFromSheets()" title="새로고침"
+                    class="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium opacity-75 hover:opacity-100 hover:bg-white/10 transition-all">
+                    <span>🔄</span><span>새로고침</span>
+                </button>
+                <div class="w-px h-4 bg-white/20 mx-0.5"></div>
+                <button onclick="openUrlSetup()" title="시트 연결"
+                    class="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium opacity-75 hover:opacity-100 hover:bg-white/10 transition-all">
+                    <span>⚙️</span><span>시트 연결</span>
+                </button>
+            </div>
+            <!-- 날짜 + 동기화 상태 -->
+            <div class="flex flex-col items-end border-l border-white/20 pl-3">
+                <div id="currentDateDisplay" class="text-xs font-medium text-rose-200"></div>
+                <div id="syncStatus" class="text-[10px] opacity-60 mt-0.5"></div>
+            </div>
         </div>
     </header>
 
-    <!-- ==================== KPI 요약바 ==================== -->
-    <div class="kpi-bar" id="kpiBar">
+    <div id="dualOuterWrap" class="flex-1 w-full flex min-h-0 overflow-hidden">
+    <main class="flex-1 flex relative" style="min-height:0;overflow:hidden">
 
-        <!-- ① 과업 평균 진행률 -->
-        <div class="kpi-card" style="flex:1.2;min-width:220px">
-            <div class="kpi-label">TASK PROGRESS · 과업 평균 진행률</div>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
-                <div class="kpi-value" id="kpi-task-pct" style="min-width:52px">—</div>
-                <div style="flex:1;display:flex;flex-direction:column;gap:4px">
-                    <!-- 스택형 세그먼트 바 -->
-                    <div style="height:6px;border-radius:3px;overflow:hidden;display:flex;gap:1px" id="kpi-stack-bar">
-                        <div id="ksb-ok"   style="height:100%;background:#34d399;transition:width 0.8s ease;border-radius:3px 0 0 3px" title="정상"></div>
-                        <div id="ksb-late" style="height:100%;background:#f97316;transition:width 0.8s ease" title="지연"></div>
-                        <div id="ksb-hold" style="height:100%;background:#94a3b8;transition:width 0.8s ease" title="보류"></div>
-                        <div id="ksb-done" style="height:100%;background:#60a5fa;transition:width 0.8s ease;border-radius:0 3px 3px 0" title="완료"></div>
-                    </div>
-                    <div class="kpi-task-pills" id="kpi-task-pills" style="gap:4px"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 구분 -->
-        <div style="width:1px;background:rgba(255,255,255,0.07);margin:14px 0;flex-shrink:0"></div>
-
-        <!-- ② 지연 비율 -->
-        <div class="kpi-card" style="flex:1.6;min-width:280px">
-            <div class="kpi-label">DELAY RATIO · 지연 비율</div>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
-                <!-- 반원 게이지 -->
-                <div style="position:relative;width:52px;height:28px;flex-shrink:0">
-                    <svg width="52" height="28" viewBox="0 0 52 28">
-                        <path d="M4 26 A22 22 0 0 1 48 26" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="5" stroke-linecap="round"/>
-                        <path id="kpi-gauge-arc" d="M4 26 A22 22 0 0 1 48 26" fill="none" stroke="#34d399" stroke-width="5" stroke-linecap="round"
-                            stroke-dasharray="69.1" stroke-dashoffset="69.1" style="transition:stroke-dashoffset 0.8s ease,stroke 0.5s ease"/>
-                    </svg>
-                    <div id="kpi-gauge-pct" style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:11px;font-weight:900;color:#fff;line-height:1">0%</div>
-                </div>
-                <div style="flex-shrink:0">
-                    <div style="display:flex;align-items:baseline;gap:4px">
-                        <span class="kpi-value kpi-risk-num" id="kpi-delay-count" style="font-size:24px">—</span>
-                        <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700">건 지연</span>
-                    </div>
-                    <div id="kpi-delay-detail" style="font-size:9px;color:rgba(255,255,255,0.45);font-weight:700;margin-top:1px;white-space:nowrap">전체 과업 대비 —</div>
-                </div>
-                <!-- 지연 칩: 가로 배치 -->
-                <div id="kpi-delay-chips" style="display:flex;flex-direction:row;flex-wrap:nowrap;gap:4px;overflow:hidden;flex:1;align-items:center"></div>
-            </div>
-        </div>
-
-        <!-- 구분 -->
-        <div style="width:1px;background:rgba(255,255,255,0.07);margin:14px 0;flex-shrink:0"></div>
-
-        <!-- ③ 협업팀 커버리지 -->
-        <div class="kpi-card" style="flex:1.6;min-width:260px">
-            <div class="kpi-label">COLLAB COVERAGE · 협업팀 커버리지</div>
-            <div style="display:flex;align-items:center;gap:12px;margin-top:3px">
-                <div style="display:flex;align-items:baseline;gap:4px;flex-shrink:0">
-                    <div class="kpi-value" id="kpi-collab-num" style="color:#93c5fd">—</div>
-                    <div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700">개 팀</div>
-                </div>
-                <div id="kpi-collab-tags" style="display:flex;gap:3px;flex-wrap:wrap;overflow:hidden;flex:1;max-height:40px"></div>
-            </div>
-        </div>
-
-        <!-- 구분 -->
-        <div style="width:1px;background:rgba(255,255,255,0.07);margin:14px 0;flex-shrink:0"></div>
-
-        <!-- D-day 카운터 -->
-        <div class="kpi-dday-wrap" id="kpiDday" style="flex-shrink:0">
-            <div class="kpi-dday-label">2Q 마감까지</div>
-            <div class="kpi-dday-count" id="kpi-dday-count">—</div>
-            <div class="kpi-dday-date" id="kpi-dday-date">2026.06.30</div>
-        </div>
-    </div>
-
-    <main class="flex-1 grid grid-cols-12" style="height:calc(100vh - 120px);overflow:hidden">
-
-        <!-- LEFT PANEL: 주요 공유사항 -->
-        <div class="col-span-3 left-panel flex flex-col border-r-2 border-[#496259]/20" style="padding:14px 12px 14px 14px;gap:8px;overflow:hidden">
-            <div class="flex items-center gap-2 pb-2 border-b-2 border-[#496259]" style="flex-shrink:0">
-                <span class="font-black text-[#496259] tracking-tight" style="font-size:13px">주요 공유사항</span>
+        <!-- LEFT PANEL: 주요 공유사항 (폭 고정) -->
+        <div class="w-[360px] flex-shrink-0 left-panel flex flex-col border-r-2 border-[#1E3A8A]/20" style="padding:14px 12px 14px 14px;gap:16px;overflow:hidden">
+            <div class="flex items-center gap-2 pb-2 border-b-2 border-[#1E3A8A]" style="flex-shrink:0">
+                <span class="font-black text-[#1E3A8A] tracking-tight" style="font-size:18px">📌 주요 공유사항</span>
             </div>
 
             <!-- 팀 공유사항 -->
             <div class="bg-white rounded-xl border border-slate-200 flex flex-col shadow-sm" style="flex:1;min-height:0;padding:10px 12px">
                 <div class="flex items-center gap-1.5 mb-2" style="flex-shrink:0">
-                    <span class="w-1 h-4 rounded-full bg-[#496259] inline-block shrink-0"></span>
+                    <span class="w-1 h-4 rounded-full bg-[#1E3A8A] inline-block shrink-0"></span>
                     <h3 class="text-slate-700 font-black" style="font-size:12px;letter-spacing:-0.3px">팀 공유사항</h3>
                 </div>
                 <div id="teamMemoList" class="overflow-y-auto custom-scrollbar space-y-1.5" style="flex:1;min-height:0"></div>
             </div>
 
             <!-- 지시사항, 협의사항 -->
-            <div class="bg-orange-50 rounded-xl border border-orange-200 flex flex-col" style="flex:1;min-height:0;padding:10px 12px">
+            <div class="bg-rose-50 rounded-xl border border-rose-200 flex flex-col" style="flex:1;min-height:0;padding:10px 12px">
                 <div class="flex items-center gap-1.5 mb-2" style="flex-shrink:0">
-                    <span class="w-1 h-4 rounded-full bg-[#BD5429] inline-block shrink-0"></span>
-                    <h3 class="text-[#BD5429] font-black" style="font-size:12px;letter-spacing:-0.3px">지시사항, 협의사항</h3>
+                    <span class="w-1 h-4 rounded-full bg-[#E11D48] inline-block shrink-0"></span>
+                    <h3 class="text-[#E11D48] font-black" style="font-size:12px;letter-spacing:-0.3px">지시사항, 협의사항</h3>
                 </div>
                 <div id="ceoMemoList" class="overflow-y-auto custom-scrollbar space-y-1.5" style="flex:1;min-height:0"></div>
             </div>
         </div>
 
-        <!-- RIGHT PANEL: 과업수행 현황 -->
-        <div class="col-span-9 right-panel flex flex-col" style="padding:14px 16px;overflow:hidden">
-            <!-- Summary Bar -->
-            <div class="flex items-center justify-between" style="flex-shrink:0;margin-bottom:8px">
-                <div class="flex items-center gap-2">
-                    <span class="font-black text-slate-700 tracking-tight" style="font-size:14px">과업수행 현황 및 계획</span>
-                </div>
-                <div class="flex items-center gap-3 bg-slate-100 rounded-xl px-3 py-1.5 text-xs">
-                    <span class="text-slate-500 font-bold">전체</span>
-                    <strong id="sum-total" class="text-slate-800 text-sm">0</strong>
-                    <span class="w-px h-4 bg-slate-300"></span>
-                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-slate-500">정상</span><strong id="sum-ok" class="text-emerald-700">0</strong></span>
-                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-400"></span><span class="text-slate-500">지연</span><strong id="sum-late" class="text-orange-600">0</strong></span>
-                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-400"></span><span class="text-slate-500">보류</span><strong id="sum-hold" class="text-yellow-700">0</strong></span>
-                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-400"></span><span class="text-slate-500">완료</span><strong id="sum-done" class="text-blue-700">0</strong></span>
+        <!-- RIGHT PANEL: 과업수행 현황 (잔여 공간 채움) -->
+        <div class="flex-1 right-panel flex flex-col min-w-0" style="padding:16px 20px;overflow:hidden;gap:12px">
+            
+            <!-- ① 팀원 카드 영역 (박스 제거, 카드만 직접 노출) -->
+            <div style="flex-shrink:0; position:relative; z-index:20">
+                <div id="teamInvolvementGrid" class="grid grid-cols-6 gap-4">
+                    <!-- JS에서 렌더링 -->
                 </div>
             </div>
-            <div id="projectGrid" class="grid grid-cols-3 gap-3 overflow-y-auto custom-scrollbar" style="flex:1;min-height:0;align-content:stretch;grid-auto-rows:1fr">
+
+            <!-- ② 과업수행 현황 -->
+            <div class="flex flex-col flex-1 gap-4 overflow-hidden" style="min-height:0">
+                <div class="flex items-center justify-between" style="flex-shrink:0">
+                    <div class="flex items-center gap-3">
+                        <div id="projectSummaryTitle" class="flex items-center gap-3">
+                            <span class="font-black text-slate-700 tracking-tight" style="font-size:18px">전체 <span id="sum-total" class="text-2xl">0</span>건</span>
+                            <div id="filterBadge" onclick="clearMemberFilter()" title="필터 해제">
+                                <span id="filterBadgeName"></span>
+                                <span class="badge-x">×</span>
+                            </div>
+                            <!-- [MODIFY] 다중 상태 필터 버튼화 -->
+                            <div class="flex items-center gap-3 text-xs font-bold">
+                                <button onclick="toggleStatusFilter('정상')" id="btn-filter-정상" class="flex items-center gap-1.5 hover:opacity-75 transition-opacity px-1.5 py-0.5 rounded border border-transparent"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>정상 <span id="sum-ok" class="text-emerald-700 text-base">0</span></button>
+                                <button onclick="toggleStatusFilter('지연')" id="btn-filter-지연" class="flex items-center gap-1.5 hover:opacity-75 transition-opacity px-1.5 py-0.5 rounded border border-transparent"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>지연 <span id="sum-late" class="text-rose-600 text-base">0</span></button>
+                                <button onclick="toggleStatusFilter('보류')" id="btn-filter-보류" class="flex items-center gap-1.5 hover:opacity-75 transition-opacity px-1.5 py-0.5 rounded border border-transparent"><span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>보류 <span id="sum-hold" class="text-yellow-700 text-base">0</span></button>
+                                <button onclick="toggleStatusFilter('완료')" id="btn-filter-완료" class="flex items-center gap-1.5 hover:opacity-75 transition-opacity px-1.5 py-0.5 rounded border border-transparent"><span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>완료 <span id="sum-done" class="text-blue-700 text-base">0</span></button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- [NEW] 컴팩트 카드 영역 아코디언 토글 -->
+                    <button onclick="toggleSummaryList()" id="summaryToggleBtn" class="text-[11px] font-bold text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1 bg-slate-50 px-2 py-1 rounded border border-slate-200">
+                        컴팩트 뷰 숨기기 <span>▲</span>
+                    </button>
+                </div>
+                <div id="projectSummaryListWrap" class="overflow-y-auto custom-scrollbar mb-1 border-b border-slate-200/60 pb-3" style="max-height: 220px; flex-shrink: 0;">
+                    <div id="projectSummaryList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 pr-1">
+                        <!-- JS에서 사이드 렌더링 -->
+                    </div>
+                </div>
+                <div id="projectSliderWrap" class="flex-1 overflow-y-auto custom-scrollbar" style="min-height:0">
+                    <div id="projectGrid" class="grid grid-cols-2 gap-4" style="grid-auto-rows: auto;">
+                        <!-- JS에서 렌더링 (스크롤) -->
+                    </div>
+                </div>
             </div>
         </div>
     </main>
-</div><!-- /.dashboard-container -->
 
-<!-- ── 확장 패널 (Dual Monitor 오른쪽 화면) ── -->
-<div id="expandedPanel" class="custom-scrollbar">
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#94a3b8;padding:32px;text-align:center">
-        <div style="font-size:52px;margin-bottom:16px;opacity:0.4">🖥️</div>
-        <p style="font-size:14px;font-weight:700;color:#64748b;margin-bottom:6px">프로젝트 카드를 클릭하세요</p>
-        <p style="font-size:12px">선택한 과업의 상세 내용이 이 영역에 표시됩니다</p>
+    <!-- ── 드래그 리사이저 (확장 모드 전용) ── -->
+    <div id="panelDragResizer" title="드래그하여 크기 조절"></div>
+
+    <!-- ── 확장 패널 (Dual Monitor 오른쪽 화면) ── -->
+    <div id="expandedPanel" class="custom-scrollbar">
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#94a3b8;padding:32px;text-align:center">
+            <div style="font-size:52px;margin-bottom:16px;opacity:0.4">🖥️</div>
+            <p style="font-size:14px;font-weight:700;color:#64748b;margin-bottom:6px">프로젝트 카드를 클릭하세요</p>
+            <p style="font-size:12px">선택한 과업의 상세 내용이 이 영역에 표시됩니다</p>
+        </div>
+    </div>
+    </div><!-- /#dualOuterWrap -->
+</div><!-- /.dashboard-container --><!-- ==================== MODAL: 상세 팝업 (일반 모드) ==================== -->
+<div id="detailPopupOverlay" onclick="if(event.target===this)closeDetailPopup()">
+    <div class="detail-popup-content">
+        <button class="detail-popup-close" onclick="closeDetailPopup()">&times;</button>
+        <div id="detailPopupBody"></div>
     </div>
 </div>
-</div><!-- /#dualOuterWrap -->
 
-<!-- ==================== MODAL: 과업 상세보기 ==================== -->
+<!-- ==================== MODAL: 과업 상세보기 (레거시) ==================== -->
 <div id="modalOverlay">
     <div class="modal-content relative">
         <!-- 모달 개요 헤더 -->
-        <div class="bg-gradient-to-r from-[#496259] to-[#2D3E38] rounded-xl px-6 py-5 mb-5 text-white">
+        <div class="bg-gradient-to-r from-[#1E3A8A] to-[#172554] rounded-xl px-6 py-5 mb-5 text-white">
             <div class="flex justify-between items-start gap-4">
                 <!-- 좌: 과업명 + 담당 정보 -->
                 <div class="flex-1 min-w-0">
@@ -441,7 +217,7 @@
                             <span class="opacity-60">PM</span><span id="mPmBadge" class="font-bold"></span>
                         </div>
                         <div class="bg-white/15 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
-                            <span class="opacity-60">담당자</span><span id="mAssigneeBadge" class="font-bold"></span>
+                            <span class="opacity-60">co-worker</span><span id="mAssigneeBadge" class="font-bold"></span>
                         </div>
                         <div class="bg-white/15 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
                             <span class="opacity-60">협업팀</span><span id="mCollabBadge" class="font-bold"></span>
@@ -455,7 +231,7 @@
                         </div>
                         <div class="bg-black/20 border border-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2">
                             <span class="text-[10px] uppercase font-bold opacity-50 tracking-wider">완료예정</span>
-                            <span id="mPlanBadge" class="font-black text-sm text-orange-300"></span>
+                            <span id="mPlanBadge" class="font-black text-sm text-rose-300"></span>
                         </div>
                         <div id="mDurBadge" class="bg-white/10 border border-white/15 rounded-lg px-3 py-1.5 items-center gap-1.5" style="display:none">
                             <span class="text-[10px] uppercase font-bold opacity-50 tracking-wider">기간</span>
@@ -481,7 +257,7 @@
                         <input type="text" id="mPm" class="w-full border rounded px-3 py-2 font-medium bg-gray-50 text-sm" readonly>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-tighter">담당자</label>
+                        <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-tighter">co-worker</label>
                         <input type="text" id="mAssignee" class="w-full border rounded px-3 py-2 font-medium bg-gray-50 text-sm" readonly>
                     <input type="hidden" id="mCollab">
                     </div>
@@ -571,7 +347,7 @@
                     <div id="routine-att-CCP" class="flex flex-wrap mt-2"></div>
                 </div>
             </div>
-            <div class="bg-orange-50 rounded-lg border border-orange-200 p-4" style="min-height:245px">
+            <div class="bg-rose-50 rounded-lg border border-rose-200 p-4" style="min-height:245px">
                 <div class="flex justify-between items-start mb-1">
                     <span class="text-xs font-bold text-slate-700">상시기획/팀지원</span>
                     <span class="text-[10px] text-slate-400 shrink-0 ml-2">담당: 팀 공통 · 상시</span>
@@ -614,868 +390,9 @@
             </div>
         </div>
 
-        <div class="mt-4 pt-3 border-t flex justify-end items-center">
-            <button onclick="closeRoutineModal()" class="px-6 py-2 rounded bg-gray-100 text-xs font-medium">닫기</button>
-        </div>
     </div>
 </div>
 
-<script>
-// ============================================================
-// ★ 여기에 Apps Script 배포 URL을 입력하세요
-// ============================================================
-const DEFAULT_SCRIPT_URL = '';
-// ============================================================
-
-const today = new Date();
-const todayStr = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
-
-let projects = [];
-let routineData = {};
-let teamMemos = [];
-let ceoMemos = [];
-let isOfflineMode = false;
-
-// ── 초기화 ───────────────────────────────────────────────
-window.onload = () => {
-    document.getElementById('currentDateDisplay').innerText = todayStr;
-
-    const savedUrl = localStorage.getItem('sheets_script_url');
-    if (savedUrl) {
-        fetchFromSheets(savedUrl);
-    } else if (DEFAULT_SCRIPT_URL) {
-        fetchFromSheets(DEFAULT_SCRIPT_URL);
-    } else {
-        hideLoading();
-        document.getElementById('urlSetupOverlay').style.display = 'flex';
-    }
-};
-
-// ── 구글시트에서 데이터 가져오기 ─────────────────────────
-async function fetchFromSheets(url) {
-    const scriptUrl = url || localStorage.getItem('sheets_script_url') || DEFAULT_SCRIPT_URL;
-    if (!scriptUrl) { useOfflineMode(); return; }
-
-    showLoading('구글시트 데이터 불러오는 중...');
-    try {
-        const res = await fetch(scriptUrl);
-        const json = await res.json();
-        if (!json.ok) throw new Error(json.error);
-
-        const d = json.data;
-        projects   = d.projects  || [];
-        routineData= d.routines  || {};
-        teamMemos  = d.teamMemos || [];
-        ceoMemos   = d.ceoMemos  || [];
-        isOfflineMode = false;
-        setStatus(`마지막 동기화: ${todayStr}`);
-    } catch(e) {
-        console.warn('시트 로드 실패, 오프라인 모드로 전환:', e);
-        loadFromLocalStorage();
-        setStatus('⚠️ 오프라인 (로컬 데이터)');
-    }
-    hideLoading();
-    render();
-}
-
-// ── 오프라인(localStorage) ────────────────────────────────
-function loadFromLocalStorage() {
-    isOfflineMode = true;
-    projects    = JSON.parse(localStorage.getItem('biz_p_v11') || '[]');
-    routineData = JSON.parse(localStorage.getItem('routine_v11') || '{}');
-    teamMemos   = JSON.parse(localStorage.getItem('team_m_v11') || '[]');
-    ceoMemos    = JSON.parse(localStorage.getItem('ceo_m_v11')  || '[]');
-
-    // KPI 데모값 (구글시트 미연결 시 샘플 표시)
-    if (!routineData['KPI_매출']) {
-        routineData['KPI_매출']      = '128억';
-        routineData['KPI_매출증감']  = '+6.2% YoY';
-        routineData['KPI_점유율']    = '24.8%';
-        routineData['KPI_점유율증감']= '+1.4%p';
-    }
-}
-
-function useOfflineMode() {
-    document.getElementById('urlSetupOverlay').style.display = 'none';
-    loadFromLocalStorage();
-    hideLoading();
-    setStatus('오프라인 모드');
-    render();
-}
-
-// ── URL 설정 ─────────────────────────────────────────────
-function openUrlSetup() { document.getElementById('urlSetupOverlay').style.display = 'flex'; }
-
-function saveScriptUrl() {
-    const url = document.getElementById('scriptUrlInput').value.trim();
-    if (!url || !url.startsWith('https://script.google.com')) {
-        alert('올바른 Apps Script URL을 입력해주세요.\nhttps://script.google.com/macros/s/... 형태여야 합니다.');
-        return;
-    }
-    localStorage.setItem('sheets_script_url', url);
-    document.getElementById('urlSetupOverlay').style.display = 'none';
-    fetchFromSheets(url);
-}
-
-// ── 렌더링 ───────────────────────────────────────────────
-function render() {
-    renderKpiBar();
-    renderProjects();
-    renderTeamMemos();
-    renderCeoMemos();
-    renderRoutines();
-    renderReportTitle();
-    renderQuickLinks();
-    requestAnimationFrame(syncPanelHeights);
-}
-
-// 좌측 두 박스의 상단·하단을 우측 카드 그리드와 픽셀 단위로 맞춤
-function syncPanelHeights() {
-    const summaryBar = document.querySelector('.col-span-9 > div:first-child');
-    const leftTitle  = document.querySelector('.left-panel > div:first-child');
-    if (!summaryBar || !leftTitle) return;
-
-    // 우측 summary bar 높이 → 좌측 타이틀 영역 min-height 동기화
-    const sbH = summaryBar.getBoundingClientRect().height;
-    leftTitle.style.minHeight = sbH + 'px';
-}
-
-// 창 크기 바뀔 때도 재동기화
-window.addEventListener('resize', syncPanelHeights);
-
-function renderReportTitle() {
-    const title = routineData['보고제목'] || '';
-    const el = document.getElementById('reportTitleDisplay');
-    if (title.trim()) {
-        el.textContent = '📌 ' + title;
-        el.classList.remove('hidden');
-    } else {
-        el.classList.add('hidden');
-    }
-}
-
-// ── 헤더 바로가기 아이콘 렌더링 ──────────────────────────────
-// 구글시트 [상시업무] 탭에 아래 키-값으로 입력하세요:
-//   바로가기1_아이콘  |  🏛
-//   바로가기1_제목    |  나라장터
-//   바로가기1_URL     |  https://www.g2b.go.kr
-//   바로가기2_아이콘  |  📊
-//   바로가기2_제목    |  ERP
-//   바로가기2_URL     |  https://erp.company.com
-//   (바로가기1 ~ 바로가기5 까지 지원)
-function renderQuickLinks() {
-    const container = document.getElementById('quickLinks');
-    if (!container) return;
-    container.innerHTML = '';
-    for (let i = 1; i <= 5; i++) {
-        const icon  = (routineData['바로가기' + i + '_아이콘'] || '').trim();
-        const label = (routineData['바로가기' + i + '_제목']   || '').trim();
-        const url   = (routineData['바로가기' + i + '_URL']    || '').trim();
-        if (!label) continue;
-        const btn = document.createElement('button');
-        btn.className = 'flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 transition-all min-w-[48px]';
-        btn.title = label + (url ? ' → ' + url : '');
-        btn.innerHTML = '<span class="text-base leading-none">' + (icon || '🔗') + '</span>'
-                      + '<span class="text-[9px] font-semibold opacity-90 whitespace-nowrap leading-tight">' + label + '</span>';
-        if (url) {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                window.open(url, '_blank', 'noopener,noreferrer');
-            });
-        }
-        container.appendChild(btn);
-    }
-}
-
-// ── 날짜 포맷 헬퍼 ───────────────────────────────────────
-function fmtDate(val) {
-    if (!val) return '';
-    // Date 객체 또는 날짜 문자열 모두 처리
-    const d = new Date(val);
-    if (isNaN(d.getTime())) return String(val); // 파싱 불가면 원본 반환
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,'0');
-    const day = String(d.getDate()).padStart(2,'0');
-    return `${y}-${m}-${day}`;
-}
-
-function renderProjects() {
-    const grid = document.getElementById('projectGrid');
-    grid.innerHTML = '';
-
-    if (projects.length === 0) {
-        grid.innerHTML = `<div class="col-span-3 flex flex-col items-center justify-center py-20 text-slate-300">
-            <p class="text-5xl mb-3">📋</p>
-            <p class="font-bold text-sm">구글시트에 데이터를 입력하거나</p>
-            <p class="text-xs mt-1">우측 상단 <strong>시트 연결</strong>을 눌러 연동하세요</p>
-        </div>`;
-        updateSummary([]);
-        return;
-    }
-
-    updateSummary(projects);
-
-    projects.forEach((p, idx) => {
-        const progress = parseInt(p['진행률'] || p['progress'] || 0);
-        const status   = p['상태'] || p['status'] || '진행';
-        const imp      = p['우선순위'] || p['importance'] || '중';
-        const title    = p['업무명'] || p['title'] || '(제목 없음)';
-        const pm       = p['PM'] || p['pmText'] || '';
-        const startD   = fmtDate(p['착수일'] || p['startDate'] || '');
-        const planD    = fmtDate(p['계획종료일'] || p['planDate'] || '');
-        const collab   = p['협업팀'] || p['collab'] || '';
-        const issue    = p['이슈사항'] || p['issue'] || '';
-
-        // 계획 공정
-        let planPct = null;
-        if (startD && planD) {
-            const s = new Date(startD), e = new Date(planD), now = new Date();
-            if (!isNaN(s) && !isNaN(e) && e > s)
-                planPct = Math.min(100, Math.max(0, Math.round((now - s) / (e - s) * 100)));
-        }
-
-        // 지연 판정 (2-4: 10%p 이상)
-        const lag      = planPct !== null ? planPct - progress : 0;
-        const isLate   = lag > 0;
-        const isSevere = lag >= 10;
-
-        // D-day (2-1)
-        let dday = '';
-        if (planD) {
-            const e = new Date(planD), now = new Date();
-            now.setHours(0,0,0,0); e.setHours(0,0,0,0);
-            const diff = Math.round((e - now) / 86400000);
-            dday = diff > 0 ? 'D-' + diff : diff === 0 ? 'D-day' : 'D+' + Math.abs(diff);
-        }
-
-        // 진행률 바 색상
-        const barBg = progress >= 100 ? '#10b981' : isSevere ? '#ef4444' : isLate ? '#f97316' : '#496259';
-
-        let issueHtml = '';
-        if (issue && issue.trim()) {
-            const lines = issue.trim().split('\n').filter(l => l.trim());
-            issueHtml = `<div class="bg-red-50 rounded px-2 py-1.5 border border-red-200">`
-            + `<div class="font-black text-red-600 mb-1" style="font-size:9px">⚠ 이슈사항</div>`
-            + `<ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px">`
-            + lines.slice(0,3).map(l =>
-                `<li style="display:flex;align-items:flex-start;gap:4px;font-size:11px;color:#b91c1c;line-height:1.3"><span style="flex-shrink:0;color:#fca5a5;margin-top:1px">•</span><span>${l.trim()}</span></li>`
-            ).join('')
-            + (lines.length > 3 ? `<li style="font-size:9px;color:#ef4444;padding-left:10px">+ ${lines.length-3}건 더</li>` : '')
-            + `</ul></div>`;
-        }
-
-        // 카드 스타일 (2-4) — 컴팩트 버전
-        let cardCls = 'bg-white rounded-xl border border-gray-200 flex flex-col shadow-sm hover:shadow-md transition-all cursor-pointer';
-        if (status === '보류')  cardCls = 'bg-slate-50 rounded-xl border border-slate-200 flex flex-col shadow-sm transition-all cursor-pointer opacity-75';
-        else if (isSevere)      cardCls = 'card-danger rounded-xl flex flex-col shadow-sm hover:shadow-md transition-all cursor-pointer';
-        else if (isLate)        cardCls = 'card-warn rounded-xl flex flex-col shadow-sm hover:shadow-md transition-all cursor-pointer';
-
-        const card = document.createElement('div');
-        card.className = cardCls;
-        card.style.cssText = 'padding:10px 12px;gap:6px;height:100%;box-sizing:border-box;';
-        card.onclick = () => isDualMode ? renderExpandedDetail(idx) : openModal(idx);
-
-        card.innerHTML = `
-            <div class="flex justify-between items-start gap-2">
-                <p class="font-bold text-slate-800 leading-snug flex-1" style="font-size:13px">${title}</p>
-                <span class="badge-${imp} text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0">${imp}</span>
-            </div>
-            <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="status-${status} text-[10px] font-bold px-1.5 py-0.5 rounded-full">${status}</span>
-                ${pm ? `<span class="text-[11px] font-semibold text-slate-600">PM: ${pm}</span>` : ''}
-                ${collab ? `<span class="text-[11px] text-slate-500 border-l border-slate-200 pl-1.5 truncate" style="max-width:80px" title="${collab}">🤝 ${collab}</span>` : ''}
-            </div>
-            <div>
-                <div class="flex justify-between items-center mb-1" style="font-size:11px">
-                    <span class="font-bold text-slate-700">${progress}%${planPct!==null?` <span class="font-normal text-slate-400">/ 계획 ${planPct}%</span>`:''}${isSevere?` <span class="text-red-600 font-black">⚠ ${lag}%p↓</span>`:''}</span>
-                    ${dday ? `<span class="font-bold ${dday.startsWith('D+')?'text-red-500':dday==='D-day'?'text-orange-500':'text-slate-500'}">${dday}</span>` : ''}
-                </div>
-                <div class="w-full bg-gray-200 rounded-full" style="height:5px">
-                    <div class="rounded-full" style="height:5px;width:${progress}%;background:${barBg}"></div>
-                </div>
-            </div>
-            ${issueHtml}
-            <button class="w-full rounded-lg bg-[#496259] hover:bg-[#384e46] text-[11px] font-bold text-white transition-all mt-auto" style="padding:5px 0">상세보기 →</button>
-        `;
-        grid.appendChild(card);
-    });
-}
-
-function updateSummary(projs) {
-    let ok=0, late=0, hold=0, done=0;
-    projs.forEach(p => {
-        const st  = p['상태'] || p['status'] || '진행';
-        const prg = parseInt(p['진행률'] || 0);
-        if (st === '보류') { hold++; return; }
-        if (st === '완료' || prg >= 100) { done++; return; }
-        const startD = fmtDate(p['착수일'] || '');
-        const planD  = fmtDate(p['계획종료일'] || '');
-        let planPct  = null;
-        if (startD && planD) {
-            const s = new Date(startD), e = new Date(planD), now = new Date();
-            if (!isNaN(s) && !isNaN(e) && e > s)
-                planPct = Math.min(100, Math.max(0, Math.round((now-s)/(e-s)*100)));
-        }
-        if (planPct !== null && (planPct - prg) >= 10) late++;
-        else ok++;
-    });
-    const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-    set('sum-total', projs.length);
-    set('sum-ok',    ok);
-    set('sum-late',  late);
-    set('sum-hold',  hold);
-    set('sum-done',  done);
-}
-
-
-
-function renderTeamMemos() {
-    const list = document.getElementById('teamMemoList');
-    list.innerHTML = '';
-    if (teamMemos.length === 0) {
-        list.innerHTML = `<p class="text-xs text-gray-300 text-center mt-4">구글시트 <strong>팀공유사항</strong> 탭에 입력하세요</p>`;
-        return;
-    }
-    teamMemos.forEach(m => {
-        const hasStatus = m.status && m.status.trim() && m.status !== '담당자 확인';
-        list.innerHTML += `<div class="px-3 py-2.5 border-b border-slate-100 flex flex-col gap-1.5">
-            <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-                ${m.projectId ? `<span class="text-xs font-black text-[#496259] bg-[#496259]/10 px-2 py-0.5 rounded shrink-0">[${m.projectId}]</span>` : ''}
-                <span class="text-sm font-bold text-slate-700 flex-1 min-w-0 truncate">${m.author || ''}</span>
-                ${hasStatus ? `<span class="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded shrink-0">[${m.status}]</span>` : ''}
-            </div>
-            <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${m.text || ''}</p>
-        </div>`;
-    });
-}
-
-function renderCeoMemos() {
-    const list = document.getElementById('ceoMemoList');
-    list.innerHTML = '';
-    if (ceoMemos.length === 0) {
-        list.innerHTML = `<p class="text-xs text-orange-200 text-center mt-4">구글시트 <strong>사장님지시사항</strong> 탭에 입력하세요</p>`;
-        return;
-    }
-    // 시트 드롭다운 값과 일치하도록 모든 상태값 색상 매핑
-    // 시트에 없는 값도 자동으로 색상이 지정되도록 동적 처리
-    const statusColor = {
-        // 기존 값
-        '담당자 확인': 'bg-slate-600',
-        '반영 예정':   'bg-blue-600',
-        '별도 보고':   'bg-purple-600',
-        '협의 필요':   'bg-orange-500',
-        // 시트 드롭다운 추가값 — 필요시 여기에 계속 추가
-        '추진 예정':   'bg-green-600',
-        '계획 검토':   'bg-yellow-500',
-        '완료':        'bg-emerald-600',
-        '보류':        'bg-gray-500',
-        '긴급':        'bg-red-600',
-    };
-    // 위에 없는 값은 텍스트 길이 기반으로 색상 자동 배정
-    function getStatusColor(status) {
-        if (statusColor[status]) return statusColor[status];
-        const colors = ['bg-slate-500','bg-teal-600','bg-cyan-600','bg-indigo-500','bg-rose-500'];
-        return colors[status.length % colors.length];
-    }
-
-    const sorted = [...ceoMemos].reverse();
-    sorted.forEach((m, i) => {
-        const sc = getStatusColor(m.status || '');
-        const hasStatus = m.status && m.status.trim();
-        const isNewest = i === 0;
-        list.innerHTML += `<div class="${isNewest
-            ? 'bg-[#BD5429]/10 p-3 rounded-lg border-2 border-[#BD5429]/40 space-y-1.5'
-            : 'bg-white p-2.5 rounded-lg border border-orange-100 space-y-1'}">
-            ${isNewest ? '<div class="text-[10px] font-black text-[#BD5429] mb-1">🔔 최신 지시사항</div>' : ''}
-            <div class="flex items-center gap-1 flex-wrap">
-                ${m.projectId ? `<span class="text-[10px] font-bold bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">${m.projectId}</span>` : ''}
-                ${hasStatus ? `<span class="text-[10px] font-bold ${sc} text-white px-2 py-0.5 rounded ml-auto">${m.status}</span>` : ''}
-            </div>
-            <p class="${isNewest ? 'text-sm' : 'text-xs'} text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">${m.text || ''}</p>
-        </div>`;
-    });
-}
-
-function renderRoutines() {
-    const keys = ['경영현황','동종업계','지재권','CCP','팀지원','바론사업','ERP','법인관리'];
-    keys.forEach(k => {
-        const el = document.getElementById('routine-' + k);
-        if (el) el.textContent = routineData[k] || '(내용 없음)';
-        const attEl = document.getElementById('routine-att-' + k);
-        if (attEl) renderRoutineAtt(attEl, routineData[k + '_파일'] || '');
-    });
-}
-
-function renderRoutineAtt(container, raw) {
-    container.innerHTML = '';
-    if (!raw.trim()) return;
-    raw.split('\n').forEach(line => {
-        line = line.trim(); if (!line) return;
-        const parts = line.split('|');
-        const name = parts[0].trim();
-        const url  = (parts[1] || '').trim();
-        const finalUrl = url || (name.startsWith('http') ? name : '');
-        const a = document.createElement('a');
-        a.textContent = '\uD83D\uDCC4 ' + name;
-        a.className = 'inline-flex items-center text-xs font-semibold text-[#496259] bg-slate-100 hover:bg-[#496259] hover:text-white px-2.5 py-1 rounded-full border border-slate-200 transition-all cursor-pointer mr-1 mb-1';
-        if (finalUrl) {
-            a.title = finalUrl;
-            a.addEventListener('click', function(e) {
-                e.stopPropagation(); e.preventDefault();
-                window.open(finalUrl, '_blank', 'noopener,noreferrer');
-            });
-        } else { a.style.opacity='0.5'; a.style.cursor='default'; }
-        container.appendChild(a);
-    });
-}
-
-// ── 모달 ─────────────────────────────────────────────────
-function openModal(idx) {
-    const p = projects[idx];
-    const pm       = p['PM'] || p['pmText'] || '';
-    const assignee = p['담당자'] || '';
-    const collab   = p['협업팀'] || p['collab'] || '';
-    const startD   = fmtDate(p['착수일'] || p['startDate'] || '');
-    const planD    = fmtDate(p['계획종료일'] || p['planDate'] || '');
-
-    document.getElementById('modalTitle').innerText   = (p['업무명'] || p['title'] || '').replace(/\n/g,' ');
-    document.getElementById('mPmBadge').textContent       = pm || '-';
-    document.getElementById('mAssigneeBadge').textContent = assignee || '-';
-    document.getElementById('mCollabBadge').textContent   = collab || '-';
-    document.getElementById('mStartBadge').textContent    = startD || '-';
-    document.getElementById('mPlanBadge').textContent     = planD || '-';
-    const durBadge = document.getElementById('mDurBadge');
-    if (startD && planD) {
-        const _s = new Date(startD), _e = new Date(planD), _n = new Date();
-        _s.setHours(0,0,0,0); _e.setHours(0,0,0,0); _n.setHours(0,0,0,0);
-        const total   = Math.round((_e - _s) / 86400000);
-        const elapsed = Math.max(0, Math.min(total, Math.round((_n - _s) / 86400000)));
-        const remain  = Math.max(0, Math.round((_e - _n) / 86400000));
-        document.getElementById('mDurTotal').textContent   = '총 ' + total + '일';
-        document.getElementById('mDurElapsed').textContent = '진행 ' + elapsed + '일';
-        document.getElementById('mDurRemain').textContent  = '잔여 ' + remain + '일';
-        durBadge.style.display = 'flex';
-    } else {
-        durBadge.style.display = 'none';
-    }
-    document.getElementById('mPm').value       = pm;
-    document.getElementById('mAssignee').value = assignee;
-    const mCollabEl = document.getElementById('mCollab'); if(mCollabEl) mCollabEl.value = collab;
-    document.getElementById('mGoals').value    = p['과업내용'] || p['goals'] || '';
-    document.getElementById('mIssue').value    = p['이슈사항'] || p['issue'] || '';
-    document.getElementById('mSeminars').value = p['회의이력'] || p['seminars'] || '';
-
-    // 주요 URL 버튼 (3-2) — 구글시트 프로젝트탭 "주요URL" 컬럼: 제목|URL (줄바꿈으로 여러 개)
-    const urlBox = document.getElementById('mUrlLinks');
-    urlBox.innerHTML = '';
-    const rawUrls = (p['주요URL'] || p['주요 URL'] || '').trim();
-    if (rawUrls) {
-        rawUrls.split('\n').forEach(line => {
-            line = line.trim(); if (!line) return;
-            const parts = line.split('|');
-            const name = parts[0].trim();
-            const url  = (parts[1] || '').trim();
-            const finalUrl = url || (name.startsWith('http') ? name : '');
-            const btn = document.createElement('button');
-            btn.innerHTML = '🔗 ' + name;
-            btn.className = 'text-[11px] font-bold bg-amber-400 hover:bg-amber-300 text-amber-900 px-3 py-1.5 rounded-lg border border-amber-300 transition-all shadow-sm';
-            if (finalUrl) btn.addEventListener('click', e => { e.stopPropagation(); window.open(finalUrl,'_blank','noopener,noreferrer'); });
-            urlBox.appendChild(btn);
-        });
-    }
-
-    // 붙임파일/하이퍼링크 렌더링
-    // 구글시트에서 '붙임파일' 컬럼: "파일명|URL" 형식으로 여러 개는 줄바꿈(\n)으로 구분
-    const attBox = document.getElementById('mAttachments');
-    attBox.innerHTML = '';
-    const rawAtt = p['붙임파일'] || p['attachments'] || '';
-    if (rawAtt.trim()) {
-        const label = document.createElement('span');
-        label.className = 'text-xs font-bold text-slate-400 mr-1 shrink-0';
-        label.textContent = '📎 붙임파일:';
-        attBox.appendChild(label);
-        rawAtt.split('\n').forEach(line => {
-            line = line.trim();
-            if (!line) return;
-            const parts = line.split('|');
-            const name = parts[0].trim();
-            const url  = (parts[1] || '').trim();
-
-            const a = document.createElement('a');
-            a.textContent = '📄 ' + name;
-            a.className = 'inline-flex items-center gap-1 text-xs font-semibold text-[#496259] bg-slate-100 hover:bg-[#496259] hover:text-white px-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer';
-
-            const finalUrl = url || (name.startsWith('http') ? name : '');
-
-            if (finalUrl) {
-                a.title = finalUrl;
-                // ★ 카드 전체 onclick이 링크를 가로채지 못하도록 전파 차단 후 새 탭 열기
-                a.addEventListener('click', e => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    window.open(finalUrl, '_blank', 'noopener,noreferrer');
-                });
-            } else {
-                a.style.opacity = '0.5';
-                a.style.cursor = 'default';
-            }
-
-            attBox.appendChild(a);
-        });
-    }
-
-    document.getElementById('modalOverlay').style.display = 'flex';
-}
-function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
-
-function openRoutineModal() { document.getElementById('routineModalOverlay').style.display = 'flex'; }
-function closeRoutineModal() { document.getElementById('routineModalOverlay').style.display = 'none'; }
-
-function switchTab(name, btn) {
-    document.querySelectorAll('.tab-panel').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(`tab-${name}`).classList.remove('hidden');
-    btn.classList.add('active');
-}
-
-// ── KPI 요약바 렌더링 ───────────────────────────────────
-function renderKpiBar() {
-    // ─ D-day (2Q 마감: 6월 30일) ─
-    const qEnd = new Date(today.getFullYear(), 5, 30);
-    qEnd.setHours(23,59,59,0);
-    const dDiff = Math.ceil((qEnd - today) / 86400000);
-    const ddEl = document.getElementById('kpi-dday-count');
-    if (ddEl) ddEl.textContent = dDiff > 0 ? 'D-' + dDiff : dDiff === 0 ? 'D-day' : 'D+' + Math.abs(dDiff);
-    const ddDateEl = document.getElementById('kpi-dday-date');
-    if (ddDateEl) ddDateEl.textContent = today.getFullYear() + '.06.30 마감';
-
-    // ─ 과업 통계 계산 ─
-    let total = projects.length, ok = 0, late = 0, hold = 0, done = 0, totalPrg = 0;
-    let lateProjs = [];
-    const collabSet = new Set();
-
-    projects.forEach(p => {
-        const st  = p['상태'] || p['status'] || '진행';
-        const prg = parseInt(p['진행률'] || 0);
-        totalPrg += prg;
-
-        // 협업팀 수집
-        const collab = (p['협업팀'] || p['collab'] || '').trim();
-        if (collab) collab.split(/[,·\/]/).forEach(t => { const c = t.trim(); if (c) collabSet.add(c); });
-
-        if (st === '보류')               { hold++; return; }
-        if (st === '완료' || prg >= 100) { done++; return; }
-
-        const startD = fmtDate(p['착수일'] || '');
-        const planD  = fmtDate(p['계획종료일'] || '');
-        let planPct  = null;
-        if (startD && planD) {
-            const s = new Date(startD), e = new Date(planD), now = new Date();
-            if (!isNaN(s) && !isNaN(e) && e > s)
-                planPct = Math.min(100, Math.max(0, Math.round((now-s)/(e-s)*100)));
-        }
-        const lag = planPct !== null ? planPct - prg : 0;
-        if (lag >= 10) {
-            late++;
-            lateProjs.push({ name: p['업무명'] || p['title'] || '과업', lag });
-        } else ok++;
-    });
-
-    const avgPrg  = total > 0 ? Math.round(totalPrg / total) : 0;
-    const latePct = total > 0 ? Math.round(late / total * 100) : 0;
-    const collabs = [...collabSet];
-
-    // ── ① 과업 평균 진행률 ──
-    const el_tp = document.getElementById('kpi-task-pct');
-    if (el_tp) el_tp.textContent = total > 0 ? avgPrg + '%' : '—';
-
-    // 스택 바 (ok/late/hold/done 비율)
-    if (total > 0) {
-        const setW = (id, n) => { const el = document.getElementById(id); if (el) el.style.width = Math.round(n/total*100) + '%'; };
-        setW('ksb-ok',   ok);
-        setW('ksb-late', late);
-        setW('ksb-hold', hold);
-        setW('ksb-done', done);
-    }
-
-    const pillsEl = document.getElementById('kpi-task-pills');
-    if (pillsEl) {
-        pillsEl.innerHTML = total > 0
-            ? `<span class="kpi-pill" style="background:rgba(52,211,153,0.18);color:#6ee7b7">정상 ${ok}</span>`
-            + `<span class="kpi-pill" style="background:rgba(249,115,22,0.18);color:#fdba74">지연 ${late}</span>`
-            + `<span class="kpi-pill" style="background:rgba(148,163,184,0.18);color:#cbd5e1">보류 ${hold}</span>`
-            + `<span class="kpi-pill" style="background:rgba(96,165,250,0.18);color:#93c5fd">완료 ${done}</span>`
-            : '<span style="font-size:9px;color:rgba(255,255,255,0.3)">데이터 없음</span>';
-    }
-
-    // ── ② 지연 비율 ──
-    const delayCntEl = document.getElementById('kpi-delay-count');
-    if (delayCntEl) {
-        delayCntEl.textContent = late;
-        delayCntEl.style.color = late === 0 ? '#34d399' : late <= 2 ? '#fbbf24' : '#f87171';
-    }
-    const delayDetailEl = document.getElementById('kpi-delay-detail');
-    if (delayDetailEl) {
-        delayDetailEl.textContent = total > 0
-            ? (late === 0 ? '전체 과업 정상 진행 중' : `전체 ${total}건 중 ${latePct}% 지연`)
-            : '—';
-    }
-
-    // 반원 게이지 (지연 비율)
-    const gaugeArc = document.getElementById('kpi-gauge-arc');
-    const gaugePct = document.getElementById('kpi-gauge-pct');
-    if (gaugeArc) {
-        const arcLen = 69.1;
-        const offset = arcLen * (1 - latePct / 100);
-        gaugeArc.style.strokeDashoffset = offset;
-        gaugeArc.style.stroke = latePct === 0 ? '#34d399' : latePct <= 20 ? '#fbbf24' : '#f87171';
-    }
-    if (gaugePct) gaugePct.textContent = latePct + '%';
-
-    // 지연 과업 칩 (최대 2개)
-    const dchipsEl = document.getElementById('kpi-delay-chips');
-    if (dchipsEl) {
-        dchipsEl.innerHTML = '';
-        lateProjs.slice(0, 3).forEach(sp => {
-            const chip = document.createElement('div');
-            chip.style.cssText = 'background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;color:#fca5a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;flex-shrink:0';
-            chip.title = sp.name;
-            chip.textContent = `▼${sp.lag}%p · ${sp.name.length > 10 ? sp.name.slice(0,9)+'…' : sp.name}`;
-            dchipsEl.appendChild(chip);
-        });
-        if (lateProjs.length > 3) {
-            const more = document.createElement('div');
-            more.style.cssText = 'font-size:9px;color:rgba(255,255,255,0.3);font-weight:600;white-space:nowrap;flex-shrink:0';
-            more.textContent = `+${lateProjs.length - 3}건`;
-            dchipsEl.appendChild(more);
-        }
-    }
-
-    // ── ③ 협업팀 커버리지 ──
-    const collabNumEl = document.getElementById('kpi-collab-num');
-    if (collabNumEl) collabNumEl.textContent = collabs.length || '—';
-
-    const collabTagsEl = document.getElementById('kpi-collab-tags');
-    if (collabTagsEl) {
-        collabTagsEl.innerHTML = '';
-        collabs.slice(0, 6).forEach(name => {
-            const tag = document.createElement('span');
-            tag.style.cssText = 'background:rgba(147,197,253,0.12);border:1px solid rgba(147,197,253,0.2);border-radius:4px;padding:2px 5px;font-size:9px;font-weight:700;color:#93c5fd;white-space:nowrap';
-            tag.textContent = name.length > 6 ? name.slice(0,5)+'…' : name;
-            tag.title = name;
-            collabTagsEl.appendChild(tag);
-        });
-        if (collabs.length > 6) {
-            const more = document.createElement('span');
-            more.style.cssText = 'font-size:9px;color:rgba(255,255,255,0.3);font-weight:600;padding:2px';
-            more.textContent = `+${collabs.length - 6}`;
-            collabTagsEl.appendChild(more);
-        }
-        if (collabs.length === 0) {
-            collabTagsEl.innerHTML = '<span style="font-size:9px;color:rgba(255,255,255,0.3)">협업팀 정보 없음</span>';
-        }
-    }
-}
-
-// ── 유틸 ─────────────────────────────────────────────────
-function showLoading(msg) {
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    document.querySelector('#loadingOverlay p').textContent = msg || '로딩 중...';
-}
-function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
-function setStatus(msg) { document.getElementById('syncStatus').textContent = msg; }
-
-// ── 확장 모드 (Dual Monitor Support) ─────────────────────────────
-let isDualMode = false;
-
-function toggleDualMode() {
-    isDualMode = !isDualMode;
-    document.body.classList.toggle('dual-mode', isDualMode);
-    const btn     = document.getElementById('dualModeBtn');
-    const btnText = document.getElementById('dualModeBtnText');
-    if (isDualMode) {
-        btn.classList.add('active');
-        btnText.textContent = '일반 모드';
-        showExpandedPlaceholder();
-    } else {
-        btn.classList.remove('active');
-        btnText.textContent = '확장 모드';
-        showExpandedPlaceholder();
-    }
-}
-
-function showExpandedPlaceholder() {
-    const panel = document.getElementById('expandedPanel');
-    if (!panel) return;
-    panel.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#94a3b8;padding:32px;text-align:center">
-        <div style="font-size:52px;margin-bottom:16px;opacity:0.4">🖥️</div>
-        <p style="font-size:14px;font-weight:700;color:#64748b;margin-bottom:6px">프로젝트 카드를 클릭하세요</p>
-        <p style="font-size:12px">선택한 과업의 상세 내용이 이 영역에 표시됩니다</p>
-    </div>`;
-}
-
-function renderExpandedDetail(idx) {
-    const p     = projects[idx];
-    const panel = document.getElementById('expandedPanel');
-    if (!panel) return;
-
-    const pm       = p['PM'] || p['pmText'] || '';
-    const assignee = p['담당자'] || '';
-    const collab   = p['협업팀'] || p['collab'] || '';
-    const startD   = fmtDate(p['착수일'] || p['startDate'] || '');
-    const planD    = fmtDate(p['계획종료일'] || p['planDate'] || '');
-    const title    = p['업무명'] || p['title'] || '(제목 없음)';
-    const goals    = p['과업내용'] || p['goals'] || '';
-    const issue    = p['이슈사항'] || p['issue'] || '';
-    const seminars = p['회의이력'] || p['seminars'] || '';
-    const status   = p['상태'] || p['status'] || '진행';
-    const imp      = p['우선순위'] || p['importance'] || '중';
-    const progress = parseInt(p['진행률'] || 0);
-
-    // 기간 계산
-    let durHtml = '';
-    if (startD && planD) {
-        const _s = new Date(startD), _e = new Date(planD), _n = new Date();
-        _s.setHours(0,0,0,0); _e.setHours(0,0,0,0); _n.setHours(0,0,0,0);
-        const totalD   = Math.round((_e - _s) / 86400000);
-        const elapsedD = Math.max(0, Math.min(totalD, Math.round((_n - _s) / 86400000)));
-        const remainD  = Math.max(0, Math.round((_e - _n) / 86400000));
-        durHtml = `<div style="background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.18);border-radius:8px;padding:5px 12px;display:flex;align-items:center;gap:8px">
-            <span style="font-size:9px;font-weight:700;opacity:0.5;text-transform:uppercase;letter-spacing:0.05em">기간</span>
-            <span style="font-size:13px;font-weight:900;color:#fff">총 ${totalD}일</span>
-            <span style="opacity:0.3">|</span>
-            <span style="font-size:11px;font-weight:700;color:#7dd3fc">진행 ${elapsedD}일</span>
-            <span style="opacity:0.3">/</span>
-            <span style="font-size:11px;font-weight:700;color:#fde68a">잔여 ${remainD}일</span>
-        </div>`;
-    }
-
-    const barBg = progress >= 100 ? '#10b981' : status === '보류' ? '#94a3b8' : '#496259';
-
-    // 이슈 HTML (issue 내용을 textContent로 안전하게 처리 후 삽입)
-    const issueEscaped = issue
-        ? issue.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        : '';
-    const goalsEscaped = goals
-        ? goals.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        : '';
-    const seminarsEscaped = seminars
-        ? seminars.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        : '';
-
-    const rawAtt = (p['붙임파일'] || p['attachments'] || '').trim();
-
-    panel.innerHTML = `
-    <div style="padding:22px;display:flex;flex-direction:column;gap:18px;min-height:100%;box-sizing:border-box">
-
-        <!-- ① 헤더 그라디언트 배너 -->
-        <div style="background:linear-gradient(135deg,#496259 0%,#2D3E38 100%);border-radius:12px;padding:20px 22px;color:white;flex-shrink:0">
-            <h2 style="font-size:19px;font-weight:900;line-height:1.35;margin-bottom:12px;letter-spacing:-0.3px">${title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</h2>
-            <!-- 인적 정보 -->
-            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px;font-size:12px">
-                <div style="background:rgba(255,255,255,0.14);border-radius:8px;padding:4px 11px;display:flex;gap:5px;align-items:center">
-                    <span style="opacity:0.55">PM</span><strong>${pm || '-'}</strong>
-                </div>
-                <div style="background:rgba(255,255,255,0.14);border-radius:8px;padding:4px 11px;display:flex;gap:5px;align-items:center">
-                    <span style="opacity:0.55">담당자</span><strong>${assignee || '-'}</strong>
-                </div>
-                <div style="background:rgba(255,255,255,0.14);border-radius:8px;padding:4px 11px;display:flex;gap:5px;align-items:center">
-                    <span style="opacity:0.55">협업팀</span><strong>${collab || '-'}</strong>
-                </div>
-                <span class="badge-${imp}" style="border-radius:999px;padding:3px 9px;font-size:10px;font-weight:700;align-self:center">${imp}</span>
-                <span class="status-${status}" style="border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;align-self:center">${status}</span>
-            </div>
-            <!-- 일정 정보 -->
-            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px;font-size:12px">
-                <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.18);border-radius:8px;padding:4px 12px;display:flex;gap:7px;align-items:center">
-                    <span style="font-size:9px;font-weight:700;opacity:0.5;text-transform:uppercase;letter-spacing:0.05em">착수</span>
-                    <span style="font-weight:900;font-size:13px;color:#6ee7b7">${startD || '-'}</span>
-                </div>
-                <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.18);border-radius:8px;padding:4px 12px;display:flex;gap:7px;align-items:center">
-                    <span style="font-size:9px;font-weight:700;opacity:0.5;text-transform:uppercase;letter-spacing:0.05em">완료예정</span>
-                    <span style="font-weight:900;font-size:13px;color:#fdba74">${planD || '-'}</span>
-                </div>
-                ${durHtml}
-            </div>
-            <!-- 진행률 바 -->
-            <div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-                    <span style="font-size:11px;font-weight:700;opacity:0.65">진행률</span>
-                    <span style="font-size:20px;font-weight:900">${progress}%</span>
-                </div>
-                <div style="height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,0.15)">
-                    <div style="height:100%;width:${progress}%;background:${barBg};border-radius:4px;transition:width 0.9s ease"></div>
-                </div>
-            </div>
-            <!-- 주요 URL 버튼 영역 -->
-            <div id="exp-urlLinks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px"></div>
-        </div>
-
-        <!-- ② 본문 2컬럼 그리드 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0">
-            <!-- 왼쪽: 과업내용 + 이슈 -->
-            <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
-                <div style="display:flex;flex-direction:column;flex:1;min-height:0">
-                    <div class="exp-label">과업 목표 및 내용</div>
-                    <div class="exp-textbox" style="min-height:120px">${goalsEscaped || '(내용 없음)'}</div>
-                </div>
-                ${issueEscaped ? `<div style="display:flex;flex-direction:column;flex-shrink:0">
-                    <div class="exp-label" style="color:#ef4444">⚠ 이슈사항</div>
-                    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.8;color:#b91c1c;white-space:pre-wrap">${issueEscaped}</div>
-                </div>` : ''}
-            </div>
-            <!-- 오른쪽: 회의 이력 -->
-            <div style="display:flex;flex-direction:column;min-height:0">
-                <div class="exp-label">세미나 및 회의 이력</div>
-                <div class="exp-textbox" style="min-height:200px;overflow-y:auto">${seminarsEscaped || '(내용 없음)'}</div>
-            </div>
-        </div>
-
-        <!-- ③ 붙임파일 -->
-        ${rawAtt ? `<div id="exp-attachments" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #dde3eb;flex-shrink:0">
-            <span style="font-size:11px;font-weight:700;color:#94a3b8">📎 붙임파일:</span>
-        </div>` : ''}
-
-    </div>`;
-
-    // 주요 URL 버튼 (DOM으로 안전하게 생성)
-    const urlBox = panel.querySelector('#exp-urlLinks');
-    if (urlBox) {
-        const rawUrls = (p['주요URL'] || p['주요 URL'] || '').trim();
-        if (rawUrls) {
-            rawUrls.split('\n').forEach(line => {
-                line = line.trim(); if (!line) return;
-                const parts = line.split('|');
-                const name = parts[0].trim();
-                const url  = (parts[1] || '').trim();
-                const finalUrl = url || (name.startsWith('http') ? name : '');
-                const btn = document.createElement('button');
-                btn.textContent = '🔗 ' + name;
-                btn.className = 'text-xs font-bold bg-amber-400 hover:bg-amber-300 text-amber-900 px-3 py-1.5 rounded-lg border border-amber-300 transition-all shadow-sm';
-                if (finalUrl) btn.addEventListener('click', e => { e.stopPropagation(); window.open(finalUrl, '_blank', 'noopener,noreferrer'); });
-                urlBox.appendChild(btn);
-            });
-        }
-    }
-
-    // 붙임파일 버튼 (DOM으로 안전하게 생성)
-    const attBox = panel.querySelector('#exp-attachments');
-    if (attBox && rawAtt) {
-        rawAtt.split('\n').forEach(line => {
-            line = line.trim(); if (!line) return;
-            const parts = line.split('|');
-            const name = parts[0].trim();
-            const url  = (parts[1] || '').trim();
-            const finalUrl = url || (name.startsWith('http') ? name : '');
-            const btn = document.createElement('button');
-            btn.textContent = '📄 ' + name;
-            btn.className = 'text-xs font-semibold text-[#496259] bg-slate-100 hover:bg-[#496259] hover:text-white px-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer';
-            if (finalUrl) btn.addEventListener('click', e => { e.stopPropagation(); window.open(finalUrl, '_blank', 'noopener,noreferrer'); });
-            else { btn.style.opacity = '0.5'; btn.style.cursor = 'default'; }
-            attBox.appendChild(btn);
-        });
-    }
-}
-</script>
+<script src="assets/js/main.js"></script>
 </body>
 </html>
