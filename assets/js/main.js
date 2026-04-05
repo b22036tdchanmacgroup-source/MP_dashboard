@@ -451,15 +451,19 @@ function renderProjects() {
                     ${collab ? `<div class="text-[11px] text-slate-400 mt-0.5">🤝 ${collab}</div>` : ''}
                 </div>
             </div>
-            <div class="title mt-0.5 leading-tight">${title}</div>
+            <div class="title mt-0 leading-tight">${title}</div>
             <div class="desc text-slate-500" style="font-size:13px; max-height:2.8em; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${desc}</div>
             ${issue && issue.trim() ? `
-                <div class="bg-red-50 rounded-lg p-1.5 border border-red-100 mt-0.5">
+                <div class="bg-red-50 rounded-lg p-1.5 border border-red-100 mt-[1px]">
                     <div class="flex items-center gap-1 font-black text-red-600 text-[11px] mb-0.5">
                         <span>⚠️ 이슈사항</span>
                     </div>
-                    <ul class="text-xs text-red-700 leading-snug space-y-0.5" style="margin:0; padding-left:12px; list-style-type:disc;">
-                        ${issue.trim().split('\n').filter(l => l.trim()).slice(0, 4).map(l => `<li>${l.trim()}</li>`).join('')}
+                    <ul class="text-xs text-red-700 leading-snug space-y-0.5" style="margin:0; padding-left:22px; list-style-type:disc;">
+                        ${issue.trim().split('\n').filter(l => l.trim()).slice(0, 4).map(l => {
+                            const line = l.trim();
+                            const noBullet = line.startsWith('-');
+                            return `<li style="${noBullet ? 'list-style:none; margin-left:-14px;' : ''}">${line}</li>`;
+                        }).join('')}
                     </ul>
                 </div>` : ''}
             <div class="mt-auto pt-1.5 border-t border-slate-100">
@@ -659,7 +663,17 @@ function clearMemberFilter() {
     activeFilterMember = null;
     currentProjectPage = 0;
     updateFilterBadge();
-    renderProjects(); // updateSummary → renderTeamInvolvement 포함하여 dim/active 자동 초기화
+    renderProjects();
+}
+
+/** [NEW] 모든 필터(팀원 + 상태) 초기화 */
+function clearAllFilters() {
+    activeFilterMember = null;
+    activeFilterStatus = null;
+    currentProjectPage = 0;
+    updateFilterBadge();
+    updateStatusFilterUI();
+    renderProjects();
 }
 
 // 클릭 외부 시 팝업 닫기 (필터는 유지)

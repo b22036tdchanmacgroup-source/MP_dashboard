@@ -193,12 +193,12 @@
         #dualModeBtn.active { background: rgba(189,84,41,0.75) !important; border-color: rgba(189,84,41,0.5) !important; }
 
         .exp-label {
-            font-size: 11px; font-weight: 800; color: #94a3b8;
-            text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; flex-shrink: 0;
+            font-size: 15px; font-weight: 800; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; flex-shrink: 0;
         }
         .exp-textbox {
             background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-            padding: 10px 14px; font-size: 12px; line-height: 1.5; color: #475569;
+            padding: 12px 16px; font-size: 16px; line-height: 1.6; color: #475569;
             white-space: pre-wrap; overflow-y: auto; flex: 1; min-height: 0;
         }
 
@@ -229,7 +229,7 @@
             border: 3px solid #fff;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             margin-bottom: 10px;
-            background-color: #fff;
+            background-color: #f1f5f9;
         }
 
         /* 지시사항 프로젝트 연동: 강조 애니메이션 */
@@ -333,6 +333,6 @@
 
         /* 상세 팝업 모달 */
         #detailPopupOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
-        .detail-popup-content { background: #f8fafc; max-width: 1100px; width: 95vw; max-height: 90vh; border-radius: 14px; overflow-y: auto; position: relative; }
+        .detail-popup-content { background: #f8fafc; max-width: 1280px; width: 95vw; max-height: 90vh; border-radius: 14px; overflow-y: auto; position: relative; }
         .detail-popup-close { position: absolute; top: 14px; right: 18px; font-size: 28px; color: rgba(255,255,255,0.7); cursor: pointer; z-index: 10; transition: color 0.15s; background: none; border: none; line-height: 1; }
         .detail-popup-close:hover { color: white; }
